@@ -227,6 +227,10 @@ class _CallPageState extends State<CallPage> {
         creationParamsCodec: StandardMessageCodec(),
       );
     } else {
+      /*
+      * If using HarmonyOS, you need to use the HarmonyOS Flutter SDK.
+      * https://gitcode.com/openharmony-tpc/flutter_flutter/tree/3.22.0-ohos
+      **/
       return const OhosView(
         viewType: 'com.sip.flutter/VideoComponentView',
         onPlatformViewCreated: onPlatformViewCreated,
