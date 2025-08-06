@@ -1,0 +1,6 @@
+framework module SIPFramework {
+  umbrella header "SIPFramework.h"
+  export *
+
+  module * { export * }
+}

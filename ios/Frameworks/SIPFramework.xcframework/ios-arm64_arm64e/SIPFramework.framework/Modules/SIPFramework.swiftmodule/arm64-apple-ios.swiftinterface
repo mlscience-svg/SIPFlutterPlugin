@@ -1,0 +1,164 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
+// swift-module-flags: -target arm64-apple-ios15.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name SIPFramework
+import AVFoundation
+import CommonCrypto
+import CoreMedia
+import Foundation
+@_exported import SIPFramework
+import Security
+import Swift
+import SwiftUI
+import VideoToolbox
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+extension Foundation.NSNotification.Name {
+  public static let CAMERA_STATE_CHANGE: Foundation.Notification.Name
+}
+@objc @_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers public class CameraCaptureManager : ObjectiveC.NSObject {
+  public static let shared: SIPFramework.CameraCaptureManager
+  public var isRunning: Swift.Bool {
+    get
+  }
+  public func start(index: Swift.Int, width: Swift.Int, height: Swift.Int)
+  public func stop()
+  public func switchCamera()
+  public func addConsumer(id: Foundation.UUID, handler: @escaping (CoreMedia.CMSampleBuffer) -> Swift.Void)
+  public func removeConsumer(_ id: Foundation.UUID)
+  public var currentWidth: Swift.Int32 {
+    get
+  }
+  public var currentHeight: Swift.Int32 {
+    get
+  }
+  @objc deinit
+}
+extension SIPFramework.CameraCaptureManager : AVFoundation.AVCaptureVideoDataOutputSampleBufferDelegate {
+  @objc dynamic public func captureOutput(_: AVFoundation.AVCaptureOutput, didOutput sampleBuffer: CoreMedia.CMSampleBuffer, from _: AVFoundation.AVCaptureConnection)
+}
+@_hasMissingDesignatedInitializers public class EncoderConfig {
+  public var width: Swift.Int32
+  public var height: Swift.Int32
+  public var fps: Swift.Int32
+  public var bps: Swift.Int32
+  public var minBps: Swift.Int32
+  public var maxBps: Swift.Int32
+  @objc deinit
+}
+extension Foundation.NSNotification.Name {
+  public static let VIDEO_LAYER_READY: Foundation.Notification.Name
+}
+@_hasMissingDesignatedInitializers public class H264Encoder {
+  public static var econfig: SIPFramework.EncoderConfig
+  @objc deinit
+}
+public typealias OnLogCallback = @convention(c) (Swift.Int32, Swift.UnsafePointer<Swift.CChar>?, Swift.Int32) -> Swift.Void
+public typealias OnInitCompleted = @convention(c) (Swift.Int32, Swift.UnsafePointer<Swift.CChar>?) -> Swift.Void
+public typealias OnStopCompleted = @convention(c) () -> Swift.Void
+public typealias OnRegistrarState = @convention(c) (Swift.Int32) -> Swift.Void
+public typealias OnIncomingCall = @convention(c) (SIPFramework.sip_sdk_call_param) -> Swift.Void
+public typealias OnDtmfInfo = @convention(c) (SIPFramework.sip_sdk_dtmf_info_param) -> Swift.Void
+public typealias OnMessage = @convention(c) (SIPFramework.sip_sdk_message_param) -> Swift.Void
+public typealias OnMessageState = @convention(c) (Swift.Int32, SIPFramework.sip_sdk_message_param) -> Swift.Void
+public typealias OnCallState = @convention(c) (SIPFramework.sdk_uuid_t, Swift.Int32) -> Swift.Void
+public typealias ExpireWarningCallback = @convention(c) (sys_types.time_t, sys_types.time_t) -> Swift.Void
+public struct SIPSDKCallbacks {
+  public init(onLogCallback: SIPFramework.OnLogCallback? = nil, onInitCompleted: SIPFramework.OnInitCompleted? = nil, onStopCompleted: SIPFramework.OnStopCompleted? = nil, onRegistrarState: SIPFramework.OnRegistrarState? = nil, onIncomingCall: SIPFramework.OnIncomingCall? = nil, onDtmfInfo: SIPFramework.OnDtmfInfo? = nil, onMessage: SIPFramework.OnMessage? = nil, onMessageState: SIPFramework.OnMessageState? = nil, onCallState: SIPFramework.OnCallState? = nil, onExpireWarning: SIPFramework.ExpireWarningCallback? = nil)
+}
+public struct STUNConfig {
+  public var servers: [Swift.String]
+  public var enableIPv6: Swift.Int32
+  public init(servers: [Swift.String], enableIPv6: Swift.Bool)
+}
+public struct SIPSDKConfig {
+  public var port: Swift.UInt32
+  public var publicAddr: Swift.String?
+  public var logLevel: Swift.Int32
+  public var userAgent: Swift.String?
+  public var workerThreadCount: Swift.Int32
+  public var enableVideo: Swift.Int32
+  public var sdkObserver: SIPFramework.SIPSDKCallbacks
+  public var allowMultipleConnections: Swift.Int32
+  public var domainNameDirectRegistrar: Swift.Int32
+  public var doesItSupportBroadcast: Swift.Int32
+  public var stunConfig: SIPFramework.STUNConfig?
+  public init(port: Swift.UInt32 = 58581, publicAddr: Swift.String? = nil, logLevel: Swift.Int32 = 4, userAgent: Swift.String? = "", workerThreadCount: Swift.Int32 = 1, enableVideo: Swift.Bool = true, sdkObserver: SIPFramework.SIPSDKCallbacks = SIPSDKCallbacks(), allowMultipleConnections: Swift.Bool = false, domainNameDirectRegistrar: Swift.Bool = false, doesItSupportBroadcast: Swift.Bool = false, stunConfig: SIPFramework.STUNConfig? = nil)
+}
+public struct REGLocalConfig {
+  public var username: Swift.String?
+  public var proxy: Swift.String?
+  public var proxyPort: Swift.UInt32
+  public var enableStreamControl: Swift.Int32
+  public var streamElapsed: Swift.Int32
+  public var startKeyframeCount: Swift.UInt32
+  public var startKeyframeInterval: Swift.UInt32
+  public init(username: Swift.String? = nil, proxy: Swift.String? = nil, proxyPort: Swift.UInt32 = 0, enableStreamControl: Swift.Bool = false, streamElapsed: Swift.Int32 = 2, startKeyframeCount: Swift.UInt32 = 120, startKeyframeInterval: Swift.UInt32 = 1000)
+}
+public struct TURNConfig {
+  public var enable: Swift.Int32
+  public var server: Swift.String?
+  public var realm: Swift.String?
+  public var username: Swift.String?
+  public var password: Swift.String?
+  public init(enable: Swift.Bool = false, server: Swift.String? = nil, realm: Swift.String? = nil, username: Swift.String? = nil, password: Swift.String? = nil)
+}
+public struct REGConfig {
+  public var domain: Swift.String?
+  public var username: Swift.String?
+  public var password: Swift.String?
+  public var transport: Swift.String?
+  public var serverAddr: Swift.String?
+  public var serverPort: Swift.UInt32
+  public var headers: [(key: Swift.String, value: Swift.String)]?
+  public var proxy: Swift.String?
+  public var proxyPort: Swift.UInt32
+  public var enableStreamControl: Swift.Int32
+  public var streamElapsed: Swift.Int32
+  public var startKeyframeCount: Swift.UInt32
+  public var startKeyframeInterval: Swift.UInt32
+  public var turnConfig: SIPFramework.TURNConfig?
+  public init(domain: Swift.String? = nil, username: Swift.String? = nil, password: Swift.String? = nil, transport: Swift.String? = nil, serverAddr: Swift.String? = nil, serverPort: Swift.UInt32 = 0, headers: [(key: Swift.String, value: Swift.String)]? = nil, proxy: Swift.String? = nil, proxyPort: Swift.UInt32 = 0, enableStreamControl: Swift.Bool = false, streamElapsed: Swift.Int32 = 2, startKeyframeCount: Swift.UInt32 = 120, startKeyframeInterval: Swift.UInt32 = 1000, turnConfig: SIPFramework.TURNConfig? = nil)
+}
+@_hasMissingDesignatedInitializers public class SIPHandle {
+  public static func initSDK(baseUrl: Swift.String, clientId: Swift.String, clientSecret: Swift.String, config: SIPFramework.SIPSDKConfig, mediaConfig: SIPFramework.SIPSDKMediaConfig)
+  public static func destroy()
+  public static func registrar(localConfig: SIPFramework.REGLocalConfig, config: SIPFramework.REGConfig)
+  public static func unRegistrar()
+  public static func call(username: Swift.String, headers: [(key: Swift.String, value: Swift.String)]?) -> Swift.UInt64
+  public static func callIP(ip: Swift.String, headers: [(key: Swift.String, value: Swift.String)]?) -> Swift.UInt64
+  public static func answer(code: Swift.UInt32, callUuid: Swift.UInt64)
+  public static func sendDtmfInfo(type: Swift.Int32, callUuid: Swift.UInt64, content: Swift.String)
+  public static func sendMessage(username: Swift.String, content: Swift.String)
+  public static func sendMessageIP(ip: Swift.String, content: Swift.String)
+  public static func hangup(code: Swift.UInt32, callUuid: Swift.UInt64)
+  public static func dump()
+  public static func removeLicense()
+  public static func handleIpChange()
+  @objc deinit
+}
+public struct VideoMediaConfig {
+}
+public struct SIPSDKMediaH264Fmtp {
+}
+public struct SIPSDKMediaConfig {
+  public init(audioClockRate: Swift.Int32 = 16000, micGain: Swift.Float = 1.0, speakerGain: Swift.Float = 1.0, nsEnable: Swift.Bool = true, agcEnable: Swift.Bool = true, aecEnable: Swift.Bool = true, aecEliminationTime: Swift.Int16 = 30, notEnableEncode: Swift.Bool = false, notEnableDecode: Swift.Bool = false, decodeMaxWidth: Swift.UInt32 = 1920, decodeMaxHeight: Swift.UInt32 = 1080, combinSpsPpsIdr: Swift.Bool = false, profileLevelId: Swift.String? = nil, packetizationMode: Swift.String? = nil)
+}
+@_hasMissingDesignatedInitializers public class PCMPlayer {
+  public static let instance: SIPFramework.PCMPlayer
+  public func speakerEnabled() -> Swift.Bool
+  public func setSpeaker(enabled: Swift.Bool)
+  public func addConsumer(uuid: SIPFramework.sdk_uuid_t)
+  public func removeConsumer(uuid: SIPFramework.sdk_uuid_t)
+  public func put(data: Foundation.Data)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class PCMRecorder {
+  public static let instance: SIPFramework.PCMRecorder
+  public func muteEnabled() -> Swift.Bool
+  public func setMute(enabled: Swift.Bool)
+  public func addConsumer(uuid: SIPFramework.sdk_uuid_t)
+  public func removeConsumer(uuid: SIPFramework.sdk_uuid_t)
+  public func getPCM() -> Foundation.Data?
+  @objc deinit
+}

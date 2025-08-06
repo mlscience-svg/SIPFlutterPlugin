@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "sip_sdk_flutter",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

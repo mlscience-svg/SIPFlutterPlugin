@@ -1,0 +1,24 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "sip_sdk_flutter_example"
+    },
+    {
+      "name": "mic_permission_reason",
+      "value": "麦克风权限"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "摄像头权限"
+    }
+  ]
+}
