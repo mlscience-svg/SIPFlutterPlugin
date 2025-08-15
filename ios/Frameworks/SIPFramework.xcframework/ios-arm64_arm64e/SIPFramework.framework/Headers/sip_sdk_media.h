@@ -101,6 +101,7 @@ extern "C"
         float mic_gain;                    // mic增益（默认 1)
         float speaker_gain;                // speaker增益（默认 1)
         sdk_bool_t ns_enable;              // 是否启用噪声抑制（默认 SDK_TRUE）
+        int ns_strength;                   // 噪声抑制强度(默认 -20，-1～-40)
         sdk_bool_t agc_enable;             // 是否启用自动增益（默认 SDK_TRUE）
         sdk_bool_t aec_enable;             // 是否启用回音消除（默认 SDK_TRUE）
         short int aec_elimination_time;    // 回音消除时间 （默认 30 ms）

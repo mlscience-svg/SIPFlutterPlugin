@@ -5,8 +5,8 @@
 import FlutterMacOS
 import Foundation
 
-import sip_sdk_flutter
+import shared_preferences_foundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  SipSdkFlutterPlugin.register(with: registry.registrar(forPlugin: "SipSdkFlutterPlugin"))
+  SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
 }
