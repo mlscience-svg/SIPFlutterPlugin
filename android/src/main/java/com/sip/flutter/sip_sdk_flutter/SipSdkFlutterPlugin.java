@@ -17,6 +17,7 @@ import com.sip.flutter.sip_sdk_flutter.utils.audio.AudioRecorder;
 import com.sip.flutter.sip_sdk_flutter.utils.camera.CameraHandle;
 import com.sip.flutter.sip_sdk_flutter.view.VideoComponentFactory;
 import com.sip.sdk.SIPSDK;
+import com.sip.sdk.entity.SDKConstants;
 import com.sip.sdk.entity.SIPSDKCallParam;
 import com.sip.sdk.entity.SIPSDKConfig;
 import com.sip.sdk.entity.SIPSDKDtmfInfoParam;
@@ -421,7 +422,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     }
 
     private void call(Map<String, Object> args, MethodChannel.Result result) {
-        int type = MapUtils.get(args, "type", 2);
+        int type = MapUtils.get(args, "type", SDKConstants.SDK_CALL_TYPE_SERVER);
         String username = MapUtils.get(args, "username", null);
         String remoteIp = MapUtils.get(args, "remoteIp", null);
         boolean transmitVideo = MapUtils.get(args, "transmitVideo", true);
@@ -468,7 +469,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     }
 
     private void sendMessage(Map<String, Object> args, MethodChannel.Result result) {
-        int type = MapUtils.get(args, "type", 2);
+        int type = MapUtils.get(args, "type", SDKConstants.SDK_CALL_TYPE_SERVER);
         String username = MapUtils.get(args, "username", null);
         String remoteIp = MapUtils.get(args, "remoteIp", null);
         String content = MapUtils.get(args, "content", null);

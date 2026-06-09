@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class CameraHandle {
     private final String TAG = CameraHandle.class.getName();
@@ -96,6 +95,10 @@ public class CameraHandle {
     public CameraHandle() {
         try {
             cameraManager = (CameraManager) SipSdkFlutterPlugin.context.getSystemService(Context.CAMERA_SERVICE);
+            if (cameraManager == null) {
+                Log.e(TAG, "Camera manager unavailable");
+                return;
+            }
             for (String cameraId : cameraManager.getCameraIdList()) {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
@@ -123,6 +126,10 @@ public class CameraHandle {
             return;
         }
         try {
+            if (cameraManager == null) {
+                Log.e(TAG, "Open camera failed: camera manager unavailable");
+                return;
+            }
             //先关闭一下
             close();
             CameraInfo cameraInfo = null;
@@ -142,14 +149,25 @@ public class CameraHandle {
             }
 
             if (cameraInfo == null) {
-                Map.Entry<String, CameraInfo> firstEntry = targetResolutionMap.entrySet().iterator().next();
-                cameraInfo = firstEntry.getValue();
+                if (targetResolutionMap.isEmpty()) {
+                    Log.e(TAG, "Open camera failed: no available camera info");
+                    return;
+                }
+                cameraInfo = targetResolutionMap.values().iterator().next();
             }
 
             if (cameraInfo == null) {
                 return;
             }
+            if (cameraInfo.sizes == null || cameraInfo.sizes.length == 0) {
+                Log.e(TAG, "Open camera failed: no supported YUV sizes for camera " + cameraInfo.cameraId);
+                return;
+            }
             Size previewSize = selectResolution(cameraInfo.sizes, width, height);
+            if (previewSize == null) {
+                Log.e(TAG, "Open camera failed: no preview size selected for camera " + cameraInfo.cameraId);
+                return;
+            }
             setupImageReader(previewSize);
             cameraInfo.previewSize = previewSize;
             if (ActivityCompat.checkSelfPermission(SipSdkFlutterPlugin.context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -236,6 +254,11 @@ public class CameraHandle {
     public byte[] imageToI420() {
         Image image = getLatestImage();
         if (image == null) return null;
+        CameraInfo cameraInfo = getCurrentCameraInfo();
+        if (cameraInfo == null) {
+            image.close();
+            return null;
+        }
 
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer yBuf = planes[0].getBuffer();
@@ -251,7 +274,7 @@ public class CameraHandle {
         int vStride = planes[2].getRowStride();
         int vPixelStride = planes[2].getPixelStride();
 
-        int rotation = getCurrentCameraInfo().rotation;
+        int rotation = cameraInfo.rotation;
 
         byte[] result = JNIOpenH264Manage.yuvToI420AndRotate(yBuf,
                 yStride,
@@ -269,6 +292,9 @@ public class CameraHandle {
     }
 
     private Size selectResolution(Size[] sizes, int targetWidth, int targetHeight) {
+        if (sizes == null || sizes.length == 0) {
+            return null;
+        }
         Size closestSize = null;
         int minDiff = Integer.MAX_VALUE;
 
@@ -308,6 +334,7 @@ public class CameraHandle {
             imageReader.close();
             imageReader = null;
         }
+        currentCameraInfo = null;
         for (CameraStateChangeCallback callback : callbacks) {
             callback.onStateChange(false);
         }

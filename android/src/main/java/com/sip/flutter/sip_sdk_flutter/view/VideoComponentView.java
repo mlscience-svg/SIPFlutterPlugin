@@ -12,6 +12,7 @@ import com.sip.flutter.sip_sdk_flutter.R;
 import com.sip.flutter.sip_sdk_flutter.codes.H264CodecImpl;
 import com.sip.flutter.sip_sdk_flutter.view.cameragl.YUVRenderer;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import io.flutter.plugin.platform.PlatformView;
@@ -45,10 +46,10 @@ public class VideoComponentView implements PlatformView, H264CodecImpl.DecodeCal
     }
 
     @Override
-    public void onCallback(long callUuid, byte[] outData, int[] outDataSize, int width, int height) {
+    public void onCallback(long callUuid, ByteBuffer outData, int outDataSize, int width, int height) {
         if (width == 0 || height == 0) {
             return;
         }
-        yuvRenderer.update(outData, width, height);
+        yuvRenderer.update(outData, outDataSize, width, height);
     }
 }

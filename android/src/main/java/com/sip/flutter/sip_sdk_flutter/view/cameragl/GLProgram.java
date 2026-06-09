@@ -32,6 +32,33 @@ public class GLProgram {
         return mProgram > 0;
     }
 
+    public void release() {
+        // 删除纹理
+        if (mTextureID[0] != -1) {
+            GLES20.glDeleteTextures(mTextureID.length, mTextureID, 0);
+            mTextureID = new int[]{-1, -1, -1};
+        }
+        // 删除着色器程序
+        if (mProgram > 0) {
+            GLES20.glDeleteProgram(mProgram);
+            mProgram = 0;
+        }
+        // 重置所有句柄 & 变量
+        reset();
+    }
+
+    public void reset() {
+        mProgram = 0;
+        videoWidth = -1;
+        videoHeight = -1;
+        positionHandle = -1;
+        coordHandle = -1;
+        yuvHandle = new int[]{-1, -1, -1};
+        mSharpHandle = -1;
+        mTextureSizeHandle = -1;
+        TEXTURE_SIZE = null;
+    }
+
     public void buildProgram() {
         if (mProgram <= 0) {
             mProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -48,32 +75,50 @@ public class GLProgram {
     }
 
     public void buildTextures(Buffer[] yuvData, int width, int height) {
-        if (width != videoWidth || height != videoHeight) {
-            videoWidth = width;
-            videoHeight = height;
-
-            textureSize = new float[]{width, height};
-            TEXTURE_SIZE = createFloatBuffer(textureSize);
-
+        if (width <= 0 || height <= 0) return;
+        if (width != videoWidth || height != videoHeight || mTextureID[0] <= 0) {
             if (mTextureID[0] >= 0) {
                 GLES20.glDeleteTextures(mTextureID.length, mTextureID, 0);
             }
+
+            videoWidth = width;
+            videoHeight = height;
+
+            textureSize = new float[]{(float) width, (float) height};
+            TEXTURE_SIZE = createFloatBuffer(textureSize);
+
             GLES20.glGenTextures(mTextureID.length, mTextureID, 0);
+            for (int i = 0; i < mTextureID.length; i++) {
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureID[i]);
+                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+                if (i == 0) {
+                    GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE,
+                            videoWidth, videoHeight, 0,
+                            GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, null);
+                } else {
+                    GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE,
+                            videoWidth / 2, videoHeight / 2, 0,
+                            GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, null);
+                }
+            }
         }
 
         for (int i = 0; i < yuvData.length; i++) {
+            if (yuvData[i] == null) continue;
+
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureID[i]);
             if (i == 0) {
-                GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE, videoWidth, videoHeight, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, yuvData[i]);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0,
+                        videoWidth, videoHeight,
+                        GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, yuvData[i]);
             } else {
-                GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_LUMINANCE, videoWidth / 2, videoHeight / 2, 0, GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, yuvData[i]);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-                GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+                GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0,
+                        videoWidth / 2, videoHeight / 2,
+                        GLES20.GL_LUMINANCE, GLES20.GL_UNSIGNED_BYTE, yuvData[i]);
             }
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         }
     }
 
@@ -81,6 +126,8 @@ public class GLProgram {
      * the YUV data will be converted to RGB by shader.
      */
     public void drawFrame() {
+        if (mProgram <= 0 || mTextureID[0] <= 0) return;
+
         GLES20.glUseProgram(mProgram);
         GLES20.glVertexAttribPointer(positionHandle, 2, GLES20.GL_FLOAT, false, 2 * SIZEOF_FLOAT, verticeBuffer);
         GLES20.glEnableVertexAttribArray(positionHandle);
@@ -97,7 +144,6 @@ public class GLProgram {
         GLES20.glUniform2fv(mTextureSizeHandle, 1, TEXTURE_SIZE);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        GLES20.glFinish();
 
         GLES20.glDisableVertexAttribArray(positionHandle);
         GLES20.glDisableVertexAttribArray(coordHandle);
@@ -115,7 +161,7 @@ public class GLProgram {
             int[] linkStatus = new int[1];
             GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, linkStatus, 0);
             if (linkStatus[0] != GLES20.GL_TRUE) {
-                Log.e("llx", GLES20.glGetProgramInfoLog(program));
+                Log.e("llx", "链接失败: " + GLES20.glGetProgramInfoLog(program));
                 GLES20.glDeleteProgram(program);
                 program = 0;
             }
@@ -131,7 +177,7 @@ public class GLProgram {
             int[] compiled = new int[1];
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
             if (compiled[0] == 0) {
-                Log.e("llx", GLES20.glGetShaderInfoLog(shader));
+                Log.e("llx", "编译失败: " + GLES20.glGetShaderInfoLog(shader));
                 GLES20.glDeleteShader(shader);
                 shader = 0;
             }
@@ -170,7 +216,7 @@ public class GLProgram {
             1.0f, 1.0f,
     }; // fullscreen
 
-    private static float[] coordVertices = {
+    private static final float[] coordVertices = {
             0.0f, 1.0f,
             1.0f, 1.0f,
             0.0f, 0.0f,
