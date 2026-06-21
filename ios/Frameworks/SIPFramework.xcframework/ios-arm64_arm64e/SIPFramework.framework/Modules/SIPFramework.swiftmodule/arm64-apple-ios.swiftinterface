@@ -1,6 +1,7 @@
 // swift-interface-format-version: 1.0
-// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
-// swift-module-flags: -target arm64-apple-ios15.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name SIPFramework
+// swift-compiler-version: Apple Swift version 6.3.2 effective-5.10 (swiftlang-6.3.2.1.108 clang-2100.1.1.101)
+// swift-module-flags: -target arm64-apple-ios15.6 -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name SIPFramework
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.2
 import AVFoundation
 import CommonCrypto
 import CoreMedia
@@ -58,14 +59,44 @@ public typealias OnInitCompleted = @convention(c) (Swift.Int32, Swift.UnsafePoin
 public typealias OnStopCompleted = @convention(c) () -> Swift.Void
 public typealias OnRegistrarState = @convention(c) (Swift.Int32) -> Swift.Void
 public typealias OnIncomingCall = @convention(c) (SIPFramework.sip_sdk_call_param) -> Swift.Void
+public typealias OnFindIncoming = @convention(c) (Swift.UnsafeMutablePointer<Swift.Int32>?, SIPFramework.sip_sdk_find_incoming_param) -> Swift.Void
 public typealias OnDtmfInfo = @convention(c) (SIPFramework.sip_sdk_dtmf_info_param) -> Swift.Void
 public typealias OnMessage = @convention(c) (SIPFramework.sip_sdk_message_param) -> Swift.Void
 public typealias OnMessageState = @convention(c) (Swift.Int32, SIPFramework.sip_sdk_message_param) -> Swift.Void
 public typealias OnCallState = @convention(c) (SIPFramework.sip_sdk_call_status_param) -> Swift.Void
-public typealias ExpireWarningCallback = @convention(c) (sys_types.time_t, sys_types.time_t) -> Swift.Void
+public typealias ExpireWarningCallback = @convention(c) (_DarwinFoundation2.time_t, _DarwinFoundation2.time_t) -> Swift.Void
 public typealias ActivityCheckCallback = @convention(c) () -> Swift.Void
+public enum SIPDTMFInfoType : Swift.Int32 {
+  case rfc2833
+  case info
+  case custom
+  public init?(rawValue: Swift.Int32)
+  public typealias RawValue = Swift.Int32
+  public var rawValue: Swift.Int32 {
+    get
+  }
+}
+public struct SIPFindIncomingParam {
+  public let transportType: Swift.Int32
+  public let transportName: Swift.String
+  public let toDomain: Swift.String
+  public let toUsername: Swift.String
+  public let fromDomain: Swift.String
+  public let fromUsername: Swift.String
+  public let requestDomain: Swift.String
+  public let requestUsername: Swift.String
+  public init(cParam: SIPFramework.sip_sdk_find_incoming_param)
+}
+public struct SIPDTMFInfoParam {
+  public let type: SIPFramework.SIPDTMFInfoType?
+  public let rawType: Swift.Int32
+  public let callUuid: Swift.UInt64
+  public let contentType: Swift.String?
+  public let content: Swift.String?
+  public init(cParam: SIPFramework.sip_sdk_dtmf_info_param)
+}
 public struct SIPSDKCallbacks {
-  public init(onLogCallback: SIPFramework.OnLogCallback? = nil, onInitCompleted: SIPFramework.OnInitCompleted? = nil, onStopCompleted: SIPFramework.OnStopCompleted? = nil, onRegistrarState: SIPFramework.OnRegistrarState? = nil, onIncomingCall: SIPFramework.OnIncomingCall? = nil, onDtmfInfo: SIPFramework.OnDtmfInfo? = nil, onMessage: SIPFramework.OnMessage? = nil, onMessageState: SIPFramework.OnMessageState? = nil, onCallState: SIPFramework.OnCallState? = nil, onExpireWarning: SIPFramework.ExpireWarningCallback? = nil, onActivityCheck: SIPFramework.ActivityCheckCallback? = nil)
+  public init(onLogCallback: SIPFramework.OnLogCallback? = nil, onInitCompleted: SIPFramework.OnInitCompleted? = nil, onStopCompleted: SIPFramework.OnStopCompleted? = nil, onRegistrarState: SIPFramework.OnRegistrarState? = nil, onIncomingCall: SIPFramework.OnIncomingCall? = nil, onFindIncoming: SIPFramework.OnFindIncoming? = nil, onDtmfInfo: SIPFramework.OnDtmfInfo? = nil, onMessage: SIPFramework.OnMessage? = nil, onMessageState: SIPFramework.OnMessageState? = nil, onCallState: SIPFramework.OnCallState? = nil, onExpireWarning: SIPFramework.ExpireWarningCallback? = nil, onActivityCheck: SIPFramework.ActivityCheckCallback? = nil)
 }
 public struct STUNConfig {
   public var servers: [Swift.String]
@@ -117,11 +148,12 @@ public struct REGConfig {
   public var headers: [(key: Swift.String, value: Swift.String)]?
   public var proxy: Swift.String?
   public var proxyPort: Swift.UInt32
+  public var srtpKeying: Swift.Int32
   public var enableStreamControl: Swift.Int32
   public var streamElapsed: Swift.Int32
   public var lockCodec: Swift.UInt32
   public var turnConfig: SIPFramework.TURNConfig?
-  public init(domain: Swift.String? = nil, username: Swift.String? = nil, password: Swift.String? = nil, transport: Swift.String? = nil, serverAddr: Swift.String? = nil, serverPort: Swift.UInt32 = 0, headers: [(key: Swift.String, value: Swift.String)]? = nil, proxy: Swift.String? = nil, proxyPort: Swift.UInt32 = 0, enableStreamControl: Swift.Bool = false, streamElapsed: Swift.Int32 = 0, lockCodec: Swift.UInt32 = 0, turnConfig: SIPFramework.TURNConfig? = nil)
+  public init(domain: Swift.String? = nil, username: Swift.String? = nil, password: Swift.String? = nil, transport: Swift.String? = nil, serverAddr: Swift.String? = nil, serverPort: Swift.UInt32 = 0, headers: [(key: Swift.String, value: Swift.String)]? = nil, proxy: Swift.String? = nil, proxyPort: Swift.UInt32 = 0, srtpKeying: Swift.Bool = false, enableStreamControl: Swift.Bool = false, streamElapsed: Swift.Int32 = 0, lockCodec: Swift.UInt32 = 0, turnConfig: SIPFramework.TURNConfig? = nil)
 }
 public struct CallParam {
   public var type: Swift.Int32
@@ -150,6 +182,7 @@ public struct MessageParam {
   public static func call(param: SIPFramework.CallParam) -> Swift.UInt64
   public static func answer(code: Swift.UInt32, callUuid: Swift.UInt64)
   public static func sendDtmfInfo(type: Swift.Int32, callUuid: Swift.UInt64, content: Swift.String)
+  public static func sendDtmfInfo(type: SIPFramework.SIPDTMFInfoType, callUuid: Swift.UInt64, content: Swift.String)
   public static func sendMessage(param: SIPFramework.MessageParam)
   public static func hangup(code: Swift.UInt32, callUuid: Swift.UInt64)
   public static func dump()
@@ -182,3 +215,6 @@ public struct SIPSDKMediaConfig {
   public func getPCM() -> Foundation.Data?
   @objc deinit
 }
+extension SIPFramework.SIPDTMFInfoType : Swift.Equatable {}
+extension SIPFramework.SIPDTMFInfoType : Swift.Hashable {}
+extension SIPFramework.SIPDTMFInfoType : Swift.RawRepresentable {}

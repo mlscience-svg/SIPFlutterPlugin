@@ -52,11 +52,14 @@ extern "C"
         /* 服务器消息 */
         SDK_MESSAGE_TYPE_SERVER = SDK_MESSAGE_TYPE_IP_TCP + 1,
 
+        /* RFC2833 消息 */
+        SDK_DTMF_RFC2833_TYPE = 0,
+
         /* 普通 info 消息 */
-        SDK_DTMF_INFO_TYPE = 0,
+        SDK_DTMF_INFO_TYPE = SDK_DTMF_RFC2833_TYPE + 1,
 
         /* 自定义 info 消息 */
-        SDK_DTMF_INFO_TYPE_CUSTOM = 1,
+        SDK_DTMF_INFO_TYPE_CUSTOM = SDK_DTMF_INFO_TYPE + 1,
 
         /* 呼叫状态 */
         CALL_STATE_NULL = 0,
@@ -140,11 +143,24 @@ extern "C"
         sip_header headers[SDK_MAX_CUSTOM_HEADERS]; // sip header
         char *proxy;                                // 代理地址
         unsigned proxy_port;                        // 代理端口
+        sdk_bool_t srtp_keying;                     // srtp_keying
         sdk_bool_t enable_stream_control;           // 流发送控制
         int stream_elapsed;                         // 流经过时间
         unsigned lock_codec;                        // 锁定编解码器
         sip_sdk_turn_config turn_config;            // turn 服务器
     } sip_sdk_registrar_config;
+
+    typedef struct sip_sdk_find_incoming_param
+    {
+        int transport_type;
+        char transport_name[16];
+        char to_domain[128];
+        char to_username[64];
+        char from_domain[128];
+        char from_username[64];
+        char request_domain[128];
+        char request_username[64];
+    } sip_sdk_find_incoming_param;
 
     typedef struct sip_sdk_call_param
     {
@@ -202,6 +218,7 @@ extern "C"
         void (*on_stop_completed)();
         void (*on_registrar_state)(sdk_status_t state);
         void (*on_incoming_call)(sip_sdk_call_param call_param);
+        void (*on_find_incoming)(int *type, sip_sdk_find_incoming_param find_param);
         void (*on_dtmf_info)(sip_sdk_dtmf_info_param dtmf_info_param);
         void (*on_message)(sip_sdk_message_param message_param);
         void (*on_message_state)(sdk_status_t state, sip_sdk_message_param message_param);

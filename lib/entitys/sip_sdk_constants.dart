@@ -18,8 +18,9 @@ class SIPSDKConstants {
   static const int SDK_MESSAGE_TYPE_SERVER = SDK_MESSAGE_TYPE_IP_TCP + 1;
 
   // DTMF info类型
-  static const int SDK_DTMF_INFO_TYPE = 0;
-  static const int SDK_DTMF_INFO_TYPE_CUSTOM = 1;
+  static const int SDK_DTMF_RFC2833_TYPE = 0;
+  static const int SDK_DTMF_INFO_TYPE = SDK_DTMF_RFC2833_TYPE + 1;
+  static const int SDK_DTMF_INFO_TYPE_CUSTOM = SDK_DTMF_INFO_TYPE + 1;
 
   // 呼叫状态
   static const int CALL_STATE_NULL = 0;

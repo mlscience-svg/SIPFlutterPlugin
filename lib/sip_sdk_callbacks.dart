@@ -1,6 +1,7 @@
 import 'entitys/sip_sdk_call_param.dart';
 import 'entitys/sip_sdk_call_status_param.dart';
 import 'entitys/sip_sdk_dtmf_info.dart';
+import 'entitys/sip_sdk_find_incoming_param.dart';
 import 'entitys/sip_sdk_message.dart';
 
 abstract class SIPSDKCallbacks {
@@ -11,6 +12,8 @@ abstract class SIPSDKCallbacks {
   void onRegistrarState(int state);
 
   void onIncomingCall(SIPSDKCallParam callParam);
+
+  void onFindIncoming(SIPSDKFindIncomingParam param);
 
   void onDtmfInfo(SIPSDKDtmfInfo dtmfInfo);
 

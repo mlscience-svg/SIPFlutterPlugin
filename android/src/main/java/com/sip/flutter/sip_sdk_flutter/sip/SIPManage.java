@@ -12,6 +12,7 @@ import com.sip.sdk.entity.SIPSDKCallParam;
 import com.sip.sdk.entity.SIPSDKCallStatusParam;
 import com.sip.sdk.entity.SIPSDKConfig;
 import com.sip.sdk.entity.SIPSDKDtmfInfoParam;
+import com.sip.sdk.entity.SIPSDKFindIncomingParam;
 import com.sip.sdk.entity.SIPSDKMediaConfig;
 import com.sip.sdk.entity.SIPSDKMessageParam;
 import com.sip.sdk.i.SIPSDKListener;
@@ -25,6 +26,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         SIPSDKListener.MessageListener,
         SIPSDKListener.MessageStateListener,
         SIPSDKListener.IncomingCallListener,
+        SIPSDKListener.FindIncomingListener,
         SIPSDKListener.CallStateListener,
         SIPSDKListener.ExpireWarningCallbackListener,
         SIPSDKListener.ActivityCheckCallbackListener,
@@ -118,6 +120,24 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         handler.post(() -> {
             SipSdkFlutterPlugin.channel.invokeMethod("onIncomingCall", payload);
         });
+    }
+
+    @Override
+    public int onFindIncoming(SIPSDKFindIncomingParam param) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("currentType", param.currentType);
+        payload.put("transportType", param.transportType);
+        payload.put("transportName", param.transportName);
+        payload.put("toDomain", param.toDomain);
+        payload.put("toUsername", param.toUsername);
+        payload.put("fromDomain", param.fromDomain);
+        payload.put("fromUsername", param.fromUsername);
+        payload.put("requestDomain", param.requestDomain);
+        payload.put("requestUsername", param.requestUsername);
+        handler.post(() -> {
+            SipSdkFlutterPlugin.channel.invokeMethod("onFindIncoming", payload);
+        });
+        return param.currentType;
     }
 
     @Override

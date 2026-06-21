@@ -5,6 +5,38 @@ import UIKit
 public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     static var channel: FlutterMethodChannel?
 
+    private func uint32Value(_ value: Any?, default defaultValue: UInt32 = 0) -> UInt32 {
+        if let value = value as? UInt32 {
+            return value
+        }
+        if let value = value as? Int {
+            return UInt32(value)
+        }
+        if let value = value as? NSNumber {
+            return value.uint32Value
+        }
+        if let value = value as? String, let parsed = UInt32(value) {
+            return parsed
+        }
+        return defaultValue
+    }
+
+    private func uint64Value(_ value: Any?, default defaultValue: UInt64 = 0) -> UInt64 {
+        if let value = value as? UInt64 {
+            return value
+        }
+        if let value = value as? Int {
+            return UInt64(value)
+        }
+        if let value = value as? NSNumber {
+            return value.uint64Value
+        }
+        if let value = value as? String, let parsed = UInt64(value) {
+            return parsed
+        }
+        return defaultValue
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "sip_sdk_flutter", binaryMessenger: registrar.messenger())
         let instance = SipSdkFlutterPlugin()
@@ -166,6 +198,7 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             onStopCompleted: SIPManage.onStopCompleted,
             onRegistrarState: SIPManage.onRegistrarState,
             onIncomingCall: SIPManage.onIncomingCall,
+            onFindIncoming: SIPManage.onFindIncoming,
             onDtmfInfo: SIPManage.onDtmfInfo,
             onMessage: SIPManage.onMessage,
             onMessageState: SIPManage.onMessageState,
@@ -187,7 +220,7 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             domainNameDirectRegistrar: (args["domainNameDirectRegistrar"] as? Bool) ?? false,
             doesItSupportBroadcast: (args["doesItSupportBroadcast"] as? Bool) ?? false,
             customSessionName: args["customSessionName"] as? String,
-            localCallUpdateTime: Int32(args["logLevel"] as? Int ?? 60),
+            localCallUpdateTime: Int32(args["localCallUpdateTime"] as? Int ?? 60),
             stunConfig: stun
         )
         let baseUrl: String = args["baseUrl"] as? String ?? ""
@@ -251,11 +284,13 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             onStopCompleted: SIPManage.onStopCompleted,
             onRegistrarState: SIPManage.onRegistrarState,
             onIncomingCall: SIPManage.onIncomingCall,
+            onFindIncoming: SIPManage.onFindIncoming,
             onDtmfInfo: SIPManage.onDtmfInfo,
             onMessage: SIPManage.onMessage,
             onMessageState: SIPManage.onMessageState,
             onCallState: SIPManage.onCallState,
-            onExpireWarning: SIPManage.onExpireWarning
+            onExpireWarning: SIPManage.onExpireWarning,
+            onActivityCheck: SIPManage.onActivityCheck
         )
 
         // 3. 提取 SIPSDKConfig 主结构体字段
@@ -271,7 +306,7 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             domainNameDirectRegistrar: (args["domainNameDirectRegistrar"] as? Bool) ?? false,
             doesItSupportBroadcast: (args["doesItSupportBroadcast"] as? Bool) ?? false,
             customSessionName: args["customSessionName"] as? String,
-            localCallUpdateTime: Int32(args["logLevel"] as? Int ?? 60),
+            localCallUpdateTime: Int32(args["localCallUpdateTime"] as? Int ?? 60),
             stunConfig: stun
         )
         let token: String = args["token"] as? String ?? ""
@@ -289,12 +324,12 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         let localConfig = REGLocalConfig(
             transport: args["transport"] as? String,
             username: args["username"] as? String,
-            port: UInt32(args["port"] as? Int ?? 58581),
+            port: uint32Value(args["port"], default: 58581),
             boundAddr: args["boundAddr"] as? String,
             publicAddr: args["publicAddr"] as? String,
             enableStreamControl: (args["enableStreamControl"] as? Bool) ?? false,
-            streamElapsed: Int32(args["logLevel"] as? Int ?? 0),
-            lockCodec: args["lockCodec"] as? UInt32 ?? 0
+            streamElapsed: Int32(args["streamElapsed"] as? Int ?? 0),
+            lockCodec: uint32Value(args["lockCodec"])
         )
 
         SIPHandle.localAccount(localConfig: localConfig)
@@ -325,12 +360,15 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         let password = args["password"] as? String
         let transport = args["transport"] as? String
         let serverAddr = args["serverAddr"] as? String
-        let serverPort = UInt32(args["serverPort"] as? Int ?? 5060)
+        let serverPort = uint32Value(args["serverPort"], default: 5060)
         let proxy = args["proxy"] as? String
-        let proxyPort = UInt32(args["proxyPort"] as? Int ?? 0)
+        let proxyPort = uint32Value(args["proxyPort"])
+        let srtpKeying = (args["srtpKeying"] as? Bool)
+            ?? (args["srtpKeying"] as? NSNumber)?.boolValue
+            ?? false
         let enableStreamControl = (args["enableStreamControl"] as? Bool) ?? false
         let streamElapsed = Int32(args["streamElapsed"] as? Int ?? 0)
-        let lockCodec = args["lockCodec"] as? UInt32 ?? 0
+        let lockCodec = uint32Value(args["lockCodec"])
 
         let config = REGConfig(
             domain: domain,
@@ -342,6 +380,7 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             headers: headers,
             proxy: proxy,
             proxyPort: proxyPort,
+            srtpKeying: srtpKeying,
             enableStreamControl: enableStreamControl,
             streamElapsed: streamElapsed,
             lockCodec: lockCodec,
@@ -404,8 +443,8 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
      * callUuid: 接听所有0，接听指定呼叫不等于0
      */
     private func answer(args: [String: Any], result: @escaping FlutterResult) {
-        let code = UInt32(args["code"] as? Int ?? 200)
-        let callUuid = UInt64(args["callUuid"] as? Int ?? 0)
+        let code = uint32Value(args["code"], default: 200)
+        let callUuid = uint64Value(args["callUuid"])
         SIPHandle.answer(code: code, callUuid: callUuid)
         result(nil)
     }
@@ -418,9 +457,9 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
      * callUuid: 为0所有呼叫发送，不等于0指定呼叫发送
      */
     private func sendDtmfInfo(args: [String: Any], result: @escaping FlutterResult) {
-        let dtmfInfoType = Int32(args["dtmfInfoType"] as? Int ?? 0)
+        let dtmfInfoType = Int32(args["dtmfInfoType"] as? Int ?? args["type"] as? Int ?? 0)
         let content = args["content"] as? String ?? ""
-        let callUuid = UInt64(args["callUuid"] as? Int ?? 0)
+        let callUuid = uint64Value(args["callUuid"])
         // 发送
         SIPHandle.sendDtmfInfo(type: dtmfInfoType, callUuid: callUuid, content: content)
         // 成功回调
@@ -452,8 +491,8 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
      * callUuid: 为0挂断所有呼叫，不等于0挂断指定呼叫
      */
     private func hangup(args: [String: Any], result: @escaping FlutterResult) {
-        let code = UInt32(args["code"] as? Int ?? 200)
-        let callUuid = UInt64(args["callUuid"] as? Int ?? 0)
+        let code = uint32Value(args["code"], default: 200)
+        let callUuid = uint64Value(args["callUuid"])
         SIPHandle.hangup(code: code, callUuid: callUuid)
         result(nil)
     }
@@ -471,7 +510,7 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
      */
     private func handleIpChange(args: [String: Any], result: @escaping FlutterResult) {
         let restart = (args["restart"] as? Bool) ?? true
-        let restartDelay = args["restartDelay"] as? UInt32 ?? 500
+        let restartDelay = uint32Value(args["restartDelay"], default: 500)
         SIPHandle.handleIpChange(restart: restart, restartDelay: restartDelay)
         result(nil)
     }

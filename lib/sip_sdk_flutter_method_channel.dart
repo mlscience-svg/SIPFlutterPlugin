@@ -11,6 +11,7 @@ import 'entitys/sip_sdk_call_status_param.dart';
 import 'entitys/sip_sdk_camera_config.dart';
 import 'entitys/sip_sdk_config.dart';
 import 'entitys/sip_sdk_dtmf_info.dart';
+import 'entitys/sip_sdk_find_incoming_param.dart';
 import 'entitys/sip_sdk_registrar_config.dart';
 import 'sip_sdk_flutter_platform_interface.dart';
 
@@ -42,6 +43,12 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
             Map<String, dynamic>.from(call.arguments),
           );
           callbacks.onIncomingCall(callParam);
+          break;
+        case 'onFindIncoming':
+          final param = SIPSDKFindIncomingParam.fromMap(
+            Map<String, dynamic>.from(call.arguments),
+          );
+          callbacks.onFindIncoming(param);
           break;
         case 'onDtmfInfo':
           final dtmfInfo = SIPSDKDtmfInfo.fromMap(
@@ -162,7 +169,7 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   @override
   Future<void> sendDtmfInfo(int type, String content, String callUuid) async {
     return await methodChannel.invokeMethod<void>('sendDtmfInfo', {
-      'type': type,
+      'dtmfInfoType': type,
       'content': content,
       'callUuid': callUuid,
     });

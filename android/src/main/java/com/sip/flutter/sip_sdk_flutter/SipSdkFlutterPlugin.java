@@ -384,6 +384,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         config.serverPort = MapUtils.get(args, "serverPort", 5060);
         config.proxy = MapUtils.get(args, "proxy", null);
         config.proxyPort = MapUtils.get(args, "proxyPort", 5060);
+        config.srtpKeying = MapUtils.get(args, "srtpKeying", false);
         config.lockCodec = MapUtils.get(args, "lockCodec", 0);
         config.enableStreamControl = MapUtils.get(args, "enableStreamControl", false);
         config.streamElapsed = MapUtils.get(args, "streamElapsed", 0);
@@ -456,7 +457,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
 
     private void sendDtmfInfo(Map<String, Object> args, MethodChannel.Result result) {
         long callUuid = MapUtils.get(args, "callUuid", 0);
-        int dtmfInfoType = MapUtils.get(args, "dtmfInfoType", SDK_DTMF_INFO_TYPE);
+        int dtmfInfoType = MapUtils.get(args, "dtmfInfoType",
+                MapUtils.get(args, "type", SDK_DTMF_INFO_TYPE));
         String content = MapUtils.get(args, "content", null);
         String contentType = MapUtils.get(args, "contentType", null);
         SIPSDKDtmfInfoParam param = new SIPSDKDtmfInfoParam();

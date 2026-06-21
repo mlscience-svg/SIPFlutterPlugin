@@ -1,4 +1,3 @@
-import 'package:sip_sdk_flutter/entitys/sip_sdk_local_config.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_turn_config.dart';
 
 class SIPSDKRegistrarConfig {
@@ -11,6 +10,7 @@ class SIPSDKRegistrarConfig {
   final Map<String, String>? headers;
   final String? proxy;
   final int proxyPort;
+  final bool srtpKeying;
   final int? lockCodec;
   final bool enableStreamControl;
   final int streamElapsed;
@@ -26,6 +26,7 @@ class SIPSDKRegistrarConfig {
     this.headers,
     this.proxy,
     this.proxyPort = 0,
+    this.srtpKeying = false,
     this.lockCodec = 0,
     this.enableStreamControl = false,
     this.streamElapsed = 2,
@@ -42,6 +43,7 @@ class SIPSDKRegistrarConfig {
         'headers': headers,
         'proxy': proxy,
         'proxyPort': proxyPort,
+        'srtpKeying': srtpKeying,
         'lockCodec': lockCodec,
         'enableStreamControl': enableStreamControl,
         'streamElapsed': streamElapsed,

@@ -99,6 +99,24 @@ public class SIPManage {
         }
     }
 
+    static let onFindIncoming: OnFindIncoming = { type, findParam in
+        let param = SIPFindIncomingParam(cParam: findParam)
+        let payload: [String: Any] = [
+            "currentType": type?.pointee ?? -1,
+            "transportType": param.transportType,
+            "transportName": param.transportName,
+            "toDomain": param.toDomain,
+            "toUsername": param.toUsername,
+            "fromDomain": param.fromDomain,
+            "fromUsername": param.fromUsername,
+            "requestDomain": param.requestDomain,
+            "requestUsername": param.requestUsername,
+        ]
+        DispatchQueue.main.async {
+            SipSdkFlutterPlugin.channel?.invokeMethod("onFindIncoming", arguments: payload)
+        }
+    }
+
     static let onDtmfInfo: OnDtmfInfo = { dtmfInfoParam in
         print("DTMF info: \(dtmfInfoParam)")
         // 注册状态改变

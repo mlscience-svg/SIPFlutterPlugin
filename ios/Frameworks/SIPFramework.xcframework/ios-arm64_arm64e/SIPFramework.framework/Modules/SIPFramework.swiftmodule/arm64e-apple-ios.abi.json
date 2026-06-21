@@ -399,38 +399,10 @@
         "conformances": [
           {
             "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Equatable",
-            "printedName": "Equatable",
-            "usr": "s:SQ",
-            "mangledName": "$sSQ"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Hashable",
-            "printedName": "Hashable",
-            "usr": "s:SH",
-            "mangledName": "$sSH"
-          },
-          {
-            "kind": "Conformance",
-            "name": "CVarArg",
-            "printedName": "CVarArg",
-            "usr": "s:s7CVarArgP",
-            "mangledName": "$ss7CVarArgP"
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
           },
           {
             "kind": "Conformance",
@@ -441,10 +413,24 @@
           },
           {
             "kind": "Conformance",
-            "name": "_KeyValueCodingAndObserving",
-            "printedName": "_KeyValueCodingAndObserving",
-            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
-            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
           },
           {
             "kind": "Conformance",
@@ -455,10 +441,24 @@
           },
           {
             "kind": "Conformance",
-            "name": "CustomDebugStringConvertible",
-            "printedName": "CustomDebugStringConvertible",
-            "usr": "s:s28CustomDebugStringConvertibleP",
-            "mangledName": "$ss28CustomDebugStringConvertibleP"
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
           }
         ]
       },
@@ -1190,13 +1190,997 @@
       },
       {
         "kind": "TypeDecl",
+        "name": "SIPDTMFInfoType",
+        "printedName": "SIPDTMFInfoType",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "rfc2833",
+            "printedName": "rfc2833",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SIPFramework.SIPDTMFInfoType.Type) -> SIPFramework.SIPDTMFInfoType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SIPDTMFInfoType",
+                    "printedName": "SIPFramework.SIPDTMFInfoType",
+                    "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SIPFramework.SIPDTMFInfoType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SIPDTMFInfoType",
+                        "printedName": "SIPFramework.SIPDTMFInfoType",
+                        "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12SIPFramework15SIPDTMFInfoTypeO7rfc2833yA2CmF",
+            "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO7rfc2833yA2CmF",
+            "moduleName": "SIPFramework"
+          },
+          {
+            "kind": "Var",
+            "name": "info",
+            "printedName": "info",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SIPFramework.SIPDTMFInfoType.Type) -> SIPFramework.SIPDTMFInfoType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SIPDTMFInfoType",
+                    "printedName": "SIPFramework.SIPDTMFInfoType",
+                    "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SIPFramework.SIPDTMFInfoType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SIPDTMFInfoType",
+                        "printedName": "SIPFramework.SIPDTMFInfoType",
+                        "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12SIPFramework15SIPDTMFInfoTypeO4infoyA2CmF",
+            "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO4infoyA2CmF",
+            "moduleName": "SIPFramework"
+          },
+          {
+            "kind": "Var",
+            "name": "custom",
+            "printedName": "custom",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(SIPFramework.SIPDTMFInfoType.Type) -> SIPFramework.SIPDTMFInfoType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SIPDTMFInfoType",
+                    "printedName": "SIPFramework.SIPDTMFInfoType",
+                    "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "SIPFramework.SIPDTMFInfoType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SIPDTMFInfoType",
+                        "printedName": "SIPFramework.SIPDTMFInfoType",
+                        "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:12SIPFramework15SIPDTMFInfoTypeO6customyA2CmF",
+            "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO6customyA2CmF",
+            "moduleName": "SIPFramework"
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "SIPFramework.SIPDTMFInfoType?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SIPDTMFInfoType",
+                    "printedName": "SIPFramework.SIPDTMFInfoType",
+                    "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "usr": "s:s5Int32V"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:12SIPFramework15SIPDTMFInfoTypeO8rawValueACSgs5Int32V_tcfc",
+            "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO8rawValueACSgs5Int32V_tcfc",
+            "moduleName": "SIPFramework",
+            "implicit": true,
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Var",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "usr": "s:s5Int32V"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework15SIPDTMFInfoTypeO8rawValues5Int32Vvp",
+            "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO8rawValues5Int32Vvp",
+            "moduleName": "SIPFramework",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int32",
+                    "printedName": "Swift.Int32",
+                    "usr": "s:s5Int32V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework15SIPDTMFInfoTypeO8rawValues5Int32Vvg",
+                "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO8rawValues5Int32Vvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:12SIPFramework15SIPDTMFInfoTypeO",
+        "mangledName": "$s12SIPFramework15SIPDTMFInfoTypeO",
+        "moduleName": "SIPFramework",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "enumRawTypeName": "Int32",
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int32",
+                    "printedName": "Swift.Int32",
+                    "usr": "s:s5Int32V"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SY",
+            "mangledName": "$sSY"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "SIPFindIncomingParam",
+        "printedName": "SIPFindIncomingParam",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "transportType",
+            "printedName": "transportType",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "usr": "s:s5Int32V"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV13transportTypes5Int32Vvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV13transportTypes5Int32Vvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int32",
+                    "printedName": "Swift.Int32",
+                    "usr": "s:s5Int32V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV13transportTypes5Int32Vvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV13transportTypes5Int32Vvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "transportName",
+            "printedName": "transportName",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV13transportNameSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV13transportNameSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV13transportNameSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV13transportNameSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "toDomain",
+            "printedName": "toDomain",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV8toDomainSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV8toDomainSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV8toDomainSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV8toDomainSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "toUsername",
+            "printedName": "toUsername",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV10toUsernameSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV10toUsernameSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV10toUsernameSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV10toUsernameSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "fromDomain",
+            "printedName": "fromDomain",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV10fromDomainSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV10fromDomainSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV10fromDomainSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV10fromDomainSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "fromUsername",
+            "printedName": "fromUsername",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV12fromUsernameSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV12fromUsernameSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV12fromUsernameSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV12fromUsernameSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "requestDomain",
+            "printedName": "requestDomain",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV13requestDomainSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV13requestDomainSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV13requestDomainSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV13requestDomainSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "requestUsername",
+            "printedName": "requestUsername",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV15requestUsernameSSvp",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV15requestUsernameSSvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV15requestUsernameSSvg",
+                "mangledName": "$s12SIPFramework20SIPFindIncomingParamV15requestUsernameSSvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(cParam:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "SIPFindIncomingParam",
+                "printedName": "SIPFramework.SIPFindIncomingParam",
+                "usr": "s:12SIPFramework20SIPFindIncomingParamV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "sip_sdk_find_incoming_param",
+                "printedName": "SIPFramework.sip_sdk_find_incoming_param",
+                "usr": "c:@S@sip_sdk_find_incoming_param"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:12SIPFramework20SIPFindIncomingParamV01cD0ACSo27sip_sdk_find_incoming_paramV_tcfc",
+            "mangledName": "$s12SIPFramework20SIPFindIncomingParamV01cD0ACSo27sip_sdk_find_incoming_paramV_tcfc",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:12SIPFramework20SIPFindIncomingParamV",
+        "mangledName": "$s12SIPFramework20SIPFindIncomingParamV",
+        "moduleName": "SIPFramework",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "SIPDTMFInfoParam",
+        "printedName": "SIPDTMFInfoParam",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "type",
+            "printedName": "type",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "SIPFramework.SIPDTMFInfoType?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "SIPDTMFInfoType",
+                    "printedName": "SIPFramework.SIPDTMFInfoType",
+                    "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework16SIPDTMFInfoParamV4typeAA0B4TypeOSgvp",
+            "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV4typeAA0B4TypeOSgvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "SIPFramework.SIPDTMFInfoType?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "SIPDTMFInfoType",
+                        "printedName": "SIPFramework.SIPDTMFInfoType",
+                        "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework16SIPDTMFInfoParamV4typeAA0B4TypeOSgvg",
+                "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV4typeAA0B4TypeOSgvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "rawType",
+            "printedName": "rawType",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "usr": "s:s5Int32V"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework16SIPDTMFInfoParamV7rawTypes5Int32Vvp",
+            "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV7rawTypes5Int32Vvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int32",
+                    "printedName": "Swift.Int32",
+                    "usr": "s:s5Int32V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework16SIPDTMFInfoParamV7rawTypes5Int32Vvg",
+                "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV7rawTypes5Int32Vvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "callUuid",
+            "printedName": "callUuid",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework16SIPDTMFInfoParamV8callUuids6UInt64Vvp",
+            "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV8callUuids6UInt64Vvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "UInt64",
+                    "printedName": "Swift.UInt64",
+                    "usr": "s:s6UInt64V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework16SIPDTMFInfoParamV8callUuids6UInt64Vvg",
+                "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV8callUuids6UInt64Vvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "contentType",
+            "printedName": "contentType",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework16SIPDTMFInfoParamV11contentTypeSSSgvp",
+            "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV11contentTypeSSSgvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework16SIPDTMFInfoParamV11contentTypeSSSgvg",
+                "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV11contentTypeSSSgvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "content",
+            "printedName": "content",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework16SIPDTMFInfoParamV7contentSSSgvp",
+            "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV7contentSSSgvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework16SIPDTMFInfoParamV7contentSSSgvg",
+                "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV7contentSSSgvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(cParam:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "SIPDTMFInfoParam",
+                "printedName": "SIPFramework.SIPDTMFInfoParam",
+                "usr": "s:12SIPFramework16SIPDTMFInfoParamV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "sip_sdk_dtmf_info_param",
+                "printedName": "SIPFramework.sip_sdk_dtmf_info_param",
+                "usr": "c:@S@sip_sdk_dtmf_info_param"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:12SIPFramework16SIPDTMFInfoParamV01cC0ACSo23sip_sdk_dtmf_info_paramV_tcfc",
+            "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV01cC0ACSo23sip_sdk_dtmf_info_paramV_tcfc",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "AccessControl"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:12SIPFramework16SIPDTMFInfoParamV",
+        "mangledName": "$s12SIPFramework16SIPDTMFInfoParamV",
+        "moduleName": "SIPFramework",
+        "declAttributes": [
+          "AccessControl"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
         "name": "SIPSDKCallbacks",
         "printedName": "SIPSDKCallbacks",
         "children": [
           {
             "kind": "Constructor",
             "name": "init",
-            "printedName": "init(onLogCallback:onInitCompleted:onStopCompleted:onRegistrarState:onIncomingCall:onDtmfInfo:onMessage:onMessageState:onCallState:onExpireWarning:onActivityCheck:)",
+            "printedName": "init(onLogCallback:onInitCompleted:onStopCompleted:onRegistrarState:onIncomingCall:onFindIncoming:onDtmfInfo:onMessage:onMessageState:onCallState:onExpireWarning:onActivityCheck:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -1405,6 +2389,62 @@
               {
                 "kind": "TypeNominal",
                 "name": "Optional",
+                "printedName": "((Swift.UnsafeMutablePointer<Swift.Int32>?, SIPFramework.sip_sdk_find_incoming_param) -> ())?",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.UnsafeMutablePointer<Swift.Int32>?, SIPFramework.sip_sdk_find_incoming_param) -> ()",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(Swift.UnsafeMutablePointer<Swift.Int32>?, SIPFramework.sip_sdk_find_incoming_param)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Optional",
+                            "printedName": "Swift.UnsafeMutablePointer<Swift.Int32>?",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "UnsafeMutablePointer",
+                                "printedName": "Swift.UnsafeMutablePointer<Swift.Int32>",
+                                "children": [
+                                  {
+                                    "kind": "TypeNominal",
+                                    "name": "Int32",
+                                    "printedName": "Swift.Int32",
+                                    "usr": "s:s5Int32V"
+                                  }
+                                ],
+                                "usr": "s:Sp"
+                              }
+                            ],
+                            "usr": "s:Sq"
+                          },
+                          {
+                            "kind": "TypeNominal",
+                            "name": "sip_sdk_find_incoming_param",
+                            "printedName": "SIPFramework.sip_sdk_find_incoming_param",
+                            "usr": "c:@S@sip_sdk_find_incoming_param"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
                 "printedName": "((SIPFramework.sip_sdk_dtmf_info_param) -> ())?",
                 "children": [
                   {
@@ -1591,8 +2631,8 @@
               }
             ],
             "declKind": "Constructor",
-            "usr": "s:12SIPFramework15SIPSDKCallbacksV13onLogCallback0C13InitCompleted0c4StopG00C14RegistrarState0C12IncomingCall0C8DtmfInfo0C7Message0coJ00clJ00C13ExpireWarning0C13ActivityCheckACys5Int32V_SPys4Int8VGSgAPtXCSg_yAP_ATtXCSgyyXCSgyAPXCSgySo18sip_sdk_call_paramVXCSgySo0v1_w11_dtmf_info_Y0VXCSgySo0v1_w9_message_Y0VXCSgyAP_A4_tXCSgySo0v1_w1_x8_status_Y0VXCSgySi_SitXCSgAWtcfc",
-            "mangledName": "$s12SIPFramework15SIPSDKCallbacksV13onLogCallback0C13InitCompleted0c4StopG00C14RegistrarState0C12IncomingCall0C8DtmfInfo0C7Message0coJ00clJ00C13ExpireWarning0C13ActivityCheckACys5Int32V_SPys4Int8VGSgAPtXCSg_yAP_ATtXCSgyyXCSgyAPXCSgySo18sip_sdk_call_paramVXCSgySo0v1_w11_dtmf_info_Y0VXCSgySo0v1_w9_message_Y0VXCSgyAP_A4_tXCSgySo0v1_w1_x8_status_Y0VXCSgySi_SitXCSgAWtcfc",
+            "usr": "s:12SIPFramework15SIPSDKCallbacksV13onLogCallback0C13InitCompleted0c4StopG00C14RegistrarState0C12IncomingCall0c4FindK00C8DtmfInfo0C7Message0cpJ00clJ00C13ExpireWarning0C13ActivityCheckACys5Int32V_SPys4Int8VGSgAQtXCSg_yAQ_AUtXCSgyyXCSgyAQXCSgySo18sip_sdk_call_paramVXCSgySpyAQGSg_So0w1_x15_find_incoming_Z0VtXCSgySo0w1_x11_dtmf_info_Z0VXCSgySo0w1_x9_message_Z0VXCSgyAQ_A10_tXCSgySo0w1_x1_y8_status_Z0VXCSgySi_SitXCSgAXtcfc",
+            "mangledName": "$s12SIPFramework15SIPSDKCallbacksV13onLogCallback0C13InitCompleted0c4StopG00C14RegistrarState0C12IncomingCall0c4FindK00C8DtmfInfo0C7Message0cpJ00clJ00C13ExpireWarning0C13ActivityCheckACys5Int32V_SPys4Int8VGSgAQtXCSg_yAQ_AUtXCSgyyXCSgyAQXCSgySo18sip_sdk_call_paramVXCSgySpyAQGSg_So0w1_x15_find_incoming_Z0VtXCSgySo0w1_x11_dtmf_info_Z0VXCSgySo0w1_x9_message_Z0VXCSgyAQ_A10_tXCSgySo0w1_x1_y8_status_Z0VXCSgySi_SitXCSgAXtcfc",
             "moduleName": "SIPFramework",
             "declAttributes": [
               "AccessControl"
@@ -5857,6 +6897,92 @@
           },
           {
             "kind": "Var",
+            "name": "srtpKeying",
+            "printedName": "srtpKeying",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "usr": "s:s5Int32V"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework9REGConfigV10srtpKeyings5Int32Vvp",
+            "mangledName": "$s12SIPFramework9REGConfigV10srtpKeyings5Int32Vvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int32",
+                    "printedName": "Swift.Int32",
+                    "usr": "s:s5Int32V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework9REGConfigV10srtpKeyings5Int32Vvg",
+                "mangledName": "$s12SIPFramework9REGConfigV10srtpKeyings5Int32Vvg",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int32",
+                    "printedName": "Swift.Int32",
+                    "usr": "s:s5Int32V"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework9REGConfigV10srtpKeyings5Int32Vvs",
+                "mangledName": "$s12SIPFramework9REGConfigV10srtpKeyings5Int32Vvs",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework9REGConfigV10srtpKeyings5Int32VvM",
+                "mangledName": "$s12SIPFramework9REGConfigV10srtpKeyings5Int32VvM",
+                "moduleName": "SIPFramework",
+                "implicit": true,
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
             "name": "enableStreamControl",
             "printedName": "enableStreamControl",
             "children": [
@@ -6227,7 +7353,7 @@
           {
             "kind": "Constructor",
             "name": "init",
-            "printedName": "init(domain:username:password:transport:serverAddr:serverPort:headers:proxy:proxyPort:enableStreamControl:streamElapsed:lockCodec:turnConfig:)",
+            "printedName": "init(domain:username:password:transport:serverAddr:serverPort:headers:proxy:proxyPort:srtpKeying:enableStreamControl:streamElapsed:lockCodec:turnConfig:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -6384,6 +7510,13 @@
               },
               {
                 "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "hasDefaultArg": true,
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
                 "name": "Int32",
                 "printedName": "Swift.Int32",
                 "hasDefaultArg": true,
@@ -6413,8 +7546,8 @@
               }
             ],
             "declKind": "Constructor",
-            "usr": "s:12SIPFramework9REGConfigV6domain8username8password9transport10serverAddr0G4Port7headers5proxy0kI019enableStreamControl13streamElapsed9lockCodec10turnConfigACSSSg_A4Qs6UInt32VSaySS3key_SS5valuetGSgAqSSbs5Int32VAsA10TURNConfigVSgtcfc",
-            "mangledName": "$s12SIPFramework9REGConfigV6domain8username8password9transport10serverAddr0G4Port7headers5proxy0kI019enableStreamControl13streamElapsed9lockCodec10turnConfigACSSSg_A4Qs6UInt32VSaySS3key_SS5valuetGSgAqSSbs5Int32VAsA10TURNConfigVSgtcfc",
+            "usr": "s:12SIPFramework9REGConfigV6domain8username8password9transport10serverAddr0G4Port7headers5proxy0kI010srtpKeying19enableStreamControl13streamElapsed9lockCodec10turnConfigACSSSg_A4Rs6UInt32VSaySS3key_SS5valuetGSgArTS2bs5Int32VAtA10TURNConfigVSgtcfc",
+            "mangledName": "$s12SIPFramework9REGConfigV6domain8username8password9transport10serverAddr0G4Port7headers5proxy0kI010srtpKeying19enableStreamControl13streamElapsed9lockCodec10turnConfigACSSSg_A4Rs6UInt32VSaySS3key_SS5valuetGSgArTS2bs5Int32VAtA10TURNConfigVSgtcfc",
             "moduleName": "SIPFramework",
             "declAttributes": [
               "AccessControl",
@@ -8175,6 +9308,46 @@
           },
           {
             "kind": "Function",
+            "name": "sendDtmfInfo",
+            "printedName": "sendDtmfInfo(type:callUuid:content:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "SIPDTMFInfoType",
+                "printedName": "SIPFramework.SIPDTMFInfoType",
+                "usr": "s:12SIPFramework15SIPDTMFInfoTypeO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "UInt64",
+                "printedName": "Swift.UInt64",
+                "usr": "s:s6UInt64V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12SIPFramework9SIPHandleC12sendDtmfInfo4type8callUuid7contentyAA15SIPDTMFInfoTypeO_s6UInt64VSStFZ",
+            "mangledName": "$s12SIPFramework9SIPHandleC12sendDtmfInfo4type8callUuid7contentyAA15SIPDTMFInfoTypeO_s6UInt64VSStFZ",
+            "moduleName": "SIPFramework",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "sendMessage",
             "printedName": "sendMessage(param:)",
             "children": [
@@ -9189,28 +10362,6 @@
           },
           {
             "kind": "Conformance",
-            "name": "_ObjectiveCBridgeable",
-            "printedName": "_ObjectiveCBridgeable",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "_ObjectiveCType",
-                "printedName": "_ObjectiveCType",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "NSString",
-                    "printedName": "Foundation.NSString",
-                    "usr": "c:objc(cs)NSString"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:s21_ObjectiveCBridgeableP",
-            "mangledName": "$ss21_ObjectiveCBridgeableP"
-          },
-          {
-            "kind": "Conformance",
             "name": "Hashable",
             "printedName": "Hashable",
             "usr": "s:SH",
@@ -9265,6 +10416,35 @@
             "printedName": "_HasCustomAnyHashableRepresentation",
             "usr": "s:s35_HasCustomAnyHashableRepresentationP",
             "mangledName": "$ss35_HasCustomAnyHashableRepresentationP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP",
+            "mangledName": "$ss16SendableMetatypeP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_ObjectiveCBridgeable",
+            "printedName": "_ObjectiveCBridgeable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "_ObjectiveCType",
+                "printedName": "_ObjectiveCType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "NSString",
+                    "printedName": "Foundation.NSString",
+                    "usr": "c:objc(cs)NSString"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:s21_ObjectiveCBridgeableP",
+            "mangledName": "$ss21_ObjectiveCBridgeableP"
           }
         ]
       }
@@ -9281,17 +10461,52 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 552,
+      "length": 3,
+      "value": "640"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 594,
+      "length": 3,
+      "value": "480"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 635,
+      "length": 3,
+      "value": "640"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
+      "kind": "IntegerLiteral",
+      "offset": 677,
+      "length": 3,
+      "value": "480"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "Dictionary",
-      "offset": 578,
+      "offset": 744,
       "length": 3,
       "value": "[]"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "StringLiteral",
-      "offset": 635,
+      "offset": 801,
       "length": 23,
       "value": "\"camera.consumer.queue\""
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
+      "kind": "StringLiteral",
+      "offset": 876,
+      "length": 20,
+      "value": "\"camera.state.queue\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/EncoderConfig.swift",
@@ -9312,7 +10527,7 @@
       "kind": "IntegerLiteral",
       "offset": 208,
       "length": 2,
-      "value": "20"
+      "value": "25"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/EncoderConfig.swift",
@@ -9345,49 +10560,105 @@
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 433,
+      "offset": 316,
+      "length": 4,
+      "value": "0x01"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 340,
+      "length": 4,
+      "value": "0x05"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 364,
+      "length": 4,
+      "value": "0x06"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 388,
+      "length": 4,
+      "value": "0x07"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 412,
+      "length": 4,
+      "value": "0x08"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 436,
+      "length": 4,
+      "value": "0x09"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 566,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 458,
+      "offset": 591,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 827,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 865,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 905,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 540,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
-      "kind": "IntegerLiteral",
-      "offset": 587,
+      "offset": 952,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "StringLiteral",
-      "offset": 7704,
+      "offset": 6456,
       "length": 45,
       "value": "\"Decompression failed with status: \""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "StringLiteral",
-      "offset": 7748,
+      "offset": 6500,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "StringLiteral",
-      "offset": 7850,
+      "offset": 6602,
       "length": 43,
       "value": "\"No image buffer in decompression callback\""
     },
@@ -9407,295 +10678,358 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
-      "kind": "BooleanLiteral",
-      "offset": 467,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
-      "kind": "BooleanLiteral",
-      "offset": 5828,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
-      "kind": "BooleanLiteral",
-      "offset": 5949,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 6031,
+      "offset": 415,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 6485,
+      "offset": 455,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 6624,
+      "offset": 494,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 627,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 8614,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 8664,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 8873,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 8994,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 9076,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 9530,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 9669,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "Array",
-      "offset": 6898,
+      "offset": 9943,
       "length": 12,
       "value": "[0, 0, 0, 1]"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 7098,
+      "offset": 10143,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 7176,
+      "offset": 10221,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 7290,
+      "offset": 10335,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 7589,
+      "offset": 10634,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 8195,
+      "offset": 11240,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 8221,
+      "offset": 11266,
       "length": 1,
       "value": "4"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 8312,
+      "offset": 11357,
       "length": 1,
       "value": "4"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Encoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 8421,
+      "offset": 11466,
       "length": 1,
       "value": "4"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 3832,
+      "offset": 1193,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1211,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1231,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 6497,
       "length": 1,
       "value": "4"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 3866,
+      "offset": 6531,
       "length": 4,
       "value": "5060"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "StringLiteral",
-      "offset": 3909,
+      "offset": 6574,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 3956,
+      "offset": 6621,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 3995,
+      "offset": 6660,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 4038,
+      "offset": 6703,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 4159,
+      "offset": 6824,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 4216,
+      "offset": 6881,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 4270,
+      "offset": 6935,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "StringLiteral",
-      "offset": 4322,
+      "offset": 6987,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 4371,
+      "offset": 7036,
       "length": 2,
       "value": "60"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 5794,
+      "offset": 8459,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 5902,
+      "offset": 8567,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 5940,
+      "offset": 8605,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 5971,
+      "offset": 8636,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 6655,
+      "offset": 9320,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 7952,
+      "offset": 10678,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 8069,
+      "offset": 10795,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 8108,
+      "offset": 10825,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
+      "kind": "BooleanLiteral",
+      "offset": 10868,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 8146,
+      "offset": 10906,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 8177,
+      "offset": 10937,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 9206,
+      "offset": 12044,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 9359,
+      "offset": 12197,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 9392,
+      "offset": 12230,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 9428,
+      "offset": 12266,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 10006,
+      "offset": 12844,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPHandle.swift",
       "kind": "StringLiteral",
-      "offset": 10035,
+      "offset": 12873,
       "length": 2,
       "value": "\"\""
     },
@@ -9704,7 +11038,7 @@
       "kind": "IntegerLiteral",
       "offset": 1575,
       "length": 2,
-      "value": "15"
+      "value": "25"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
@@ -9855,57 +11189,64 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 4946,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 5483,
+      "offset": 5758,
       "length": 71,
       "value": "\"Deinitializing codec with user data: \""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 5553,
+      "offset": 5828,
       "length": 1,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 5745,
+      "offset": 6020,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 7460,
+      "offset": 7901,
       "length": 41,
       "value": "\"Audio media stream write thread created\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 7661,
+      "offset": 8102,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 8135,
+      "offset": 8576,
       "length": 43,
       "value": "\"Audio media stream write thread destroyed\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 8349,
+      "offset": 8790,
       "length": 40,
       "value": "\"Audio media stream read thread created\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 9921,
+      "offset": 10362,
       "length": 42,
       "value": "\"Audio media stream read thread destroyed\""
     },
@@ -9968,7 +11309,7 @@
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "BooleanLiteral",
-      "offset": 634,
+      "offset": 670,
       "length": 5,
       "value": "false"
     },
