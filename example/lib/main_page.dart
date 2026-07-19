@@ -22,15 +22,15 @@ class _MainPageState extends State<MainPage> {
   final TextEditingController passwordController =
       TextEditingController(text: "123456");
   final TextEditingController serverAddrController =
-      TextEditingController(text: "47.115.174.213");
+      TextEditingController(text: "120.79.7.237");
   final TextEditingController serverPortController =
       TextEditingController(text: "5060");
   final TextEditingController proxyController =
-      TextEditingController(text: "47.115.174.213");
+      TextEditingController(text: "120.79.7.237");
   final TextEditingController proxyPortController =
       TextEditingController(text: "5060");
   final TextEditingController callUsernameController =
-      TextEditingController(text: "1234");
+      TextEditingController(text: "1496791010863353856");
 
   bool stunEnable = false;
   bool stunEnableIPv6 = false;

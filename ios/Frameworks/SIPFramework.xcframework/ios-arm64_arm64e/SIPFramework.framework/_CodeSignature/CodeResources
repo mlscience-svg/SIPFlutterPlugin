@@ -22,7 +22,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		MpXXvgMDVfft+kuYFrEDNvgNPEM=
+		Kt8oeNYwo1OvFBDacVumuaNiq78=
 		</data>
 		<key>Modules/SIPFramework.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
@@ -42,7 +42,7 @@
 		</data>
 		<key>Modules/SIPFramework.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		cm+4fQK7lqLav8btoB95fMSbp8Q=
+		b13IYs6kNh9LyV2e4VtzfGv1uec=
 		</data>
 		<key>Modules/SIPFramework.swiftmodule/arm64e-apple-ios.abi.json</key>
 		<data>
@@ -62,7 +62,7 @@
 		</data>
 		<key>Modules/SIPFramework.swiftmodule/arm64e-apple-ios.swiftmodule</key>
 		<data>
-		YCWA5BE5SW+HECcdwOfe8WUhDec=
+		9u4e7UQAwDlCfTBR9wwmHp6pPb4=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -70,7 +70,7 @@
 		</data>
 		<key>make_xcframework.sh</key>
 		<data>
-		gugSe3KEyDvOOoIL/QdArXbLJAA=
+		hp3h6sFxaKhKLWw0xs4iAHmfTFM=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -135,7 +135,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			7SFq2u41pegsxRPPSPHs6flOoxBCQHlv3rflBNMG/VM=
+			DbJC/Bt2zVhKJtN2szpDASzZn/pjHg657WZJrnCeY7s=
 			</data>
 		</dict>
 		<key>Modules/SIPFramework.swiftmodule/arm64e-apple-ios.abi.json</key>
@@ -170,7 +170,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			FLowFzSgV+Pjw+e1E3zsAdFAO3ranG9wrK5VUxatbMQ=
+			cXQ59h0MtTS2NxxWToYi8mY1dUjAIO9BKz8+i+z9ro8=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>
@@ -184,7 +184,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			RUVsvQ3ZW1G8Y/N9HhkY2oCx6a6AYKSROUaN8s6klR4=
+			f7qplvFz+o7ORJxqO6zZ+A45pb2gL1ZAF9iLfCcdAXo=
 			</data>
 		</dict>
 	</dict>

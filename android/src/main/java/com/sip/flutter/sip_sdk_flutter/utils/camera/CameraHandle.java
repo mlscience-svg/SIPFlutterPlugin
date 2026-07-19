@@ -13,6 +13,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.util.Range;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
@@ -37,6 +38,7 @@ public class CameraHandle {
     private CameraDevice cameraDevice;
     private CameraCaptureSession captureSession;
     private ImageReader imageReader;
+    private String[] cameraIds = new String[0];
     //保存摄像头对应的目标分辨率大小
     private final Map<String, CameraInfo> targetResolutionMap = new HashMap<>();
     //当前摄像头
@@ -99,7 +101,8 @@ public class CameraHandle {
                 Log.e(TAG, "Camera manager unavailable");
                 return;
             }
-            for (String cameraId : cameraManager.getCameraIdList()) {
+            cameraIds = cameraManager.getCameraIdList();
+            for (String cameraId : cameraIds) {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
                 if (facing != null) {
@@ -132,21 +135,7 @@ public class CameraHandle {
             }
             //先关闭一下
             close();
-            CameraInfo cameraInfo = null;
-            for (Map.Entry<String, CameraInfo> entry : targetResolutionMap.entrySet()) {
-                CameraInfo info = entry.getValue();
-                if (index == 0) {
-                    if (CameraCharacteristics.LENS_FACING_BACK == info.facing) {
-                        cameraInfo = info;
-                        break;
-                    }
-                } else {
-                    if (CameraCharacteristics.LENS_FACING_FRONT == info.facing) {
-                        cameraInfo = info;
-                        break;
-                    }
-                }
-            }
+            CameraInfo cameraInfo = selectCameraInfo(index);
 
             if (cameraInfo == null) {
                 if (targetResolutionMap.isEmpty()) {
@@ -170,6 +159,10 @@ public class CameraHandle {
             }
             setupImageReader(previewSize);
             cameraInfo.previewSize = previewSize;
+            Log.i(TAG, "Open camera: id=" + cameraInfo.cameraId
+                    + ", facing=" + cameraInfo.facing
+                    + ", request=" + width + "x" + height
+                    + ", selected=" + previewSize.getWidth() + "x" + previewSize.getHeight());
             if (ActivityCompat.checkSelfPermission(SipSdkFlutterPlugin.context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
@@ -225,6 +218,7 @@ public class CameraHandle {
                             try {
                                 CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                                 captureRequestBuilder.addTarget(imageReaderSurface);
+                                apply3ASettings(captureRequestBuilder);
                                 captureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);
                             } catch (CameraAccessException e) {
                                 Log.e(TAG, "Create Camera Capture Session", e);
@@ -241,6 +235,104 @@ public class CameraHandle {
         } catch (CameraAccessException e) {
             Log.e(TAG, "Create Camera Capture Session", e);
         }
+    }
+
+    private CameraInfo selectCameraInfo(int index) {
+        Integer targetFacing = index == 0
+                ? CameraCharacteristics.LENS_FACING_BACK
+                : CameraCharacteristics.LENS_FACING_FRONT;
+
+        for (String cameraId : cameraIds) {
+            CameraInfo info = targetResolutionMap.get(cameraId);
+            if (info == null || info.facing == null) {
+                continue;
+            }
+            if (targetFacing.equals(info.facing)) {
+                return info;
+            }
+        }
+
+        return null;
+    }
+
+    private void apply3ASettings(CaptureRequest.Builder captureRequestBuilder) {
+        try {
+            if (currentCameraInfo == null || currentCameraInfo.cameraId == null) {
+                return;
+            }
+            CameraCharacteristics characteristics =
+                    cameraManager.getCameraCharacteristics(currentCameraInfo.cameraId);
+
+            captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
+
+            int[] afModes = characteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+            Float minimumFocusDistance =
+                    characteristics.get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+            boolean isFixedFocus = minimumFocusDistance == null || minimumFocusDistance <= 0f;
+
+            if (isFixedFocus && containsMode(afModes, CaptureRequest.CONTROL_AF_MODE_OFF)) {
+                captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+            } else if (containsMode(afModes, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO)) {
+                captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_VIDEO);
+            } else if (containsMode(afModes, CaptureRequest.CONTROL_AF_MODE_AUTO)) {
+                captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
+            }
+
+            Range<Integer>[] fpsRanges =
+                    characteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+            Range<Integer> fpsRange = selectFpsRange(fpsRanges, 15);
+            if (fpsRange != null) {
+                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fpsRange);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Apply 3A settings failed", e);
+        }
+    }
+
+    private boolean containsMode(int[] modes, int targetMode) {
+        if (modes == null) {
+            return false;
+        }
+        for (int mode : modes) {
+            if (mode == targetMode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Range<Integer> selectFpsRange(Range<Integer>[] fpsRanges, int targetFps) {
+        if (fpsRanges == null || fpsRanges.length == 0) {
+            return null;
+        }
+        Range<Integer> exact = null;
+        Range<Integer> best = null;
+        for (Range<Integer> range : fpsRanges) {
+            if (range == null) {
+                continue;
+            }
+            if (range.getLower() <= targetFps && range.getUpper() >= targetFps) {
+                if (range.getLower().equals(targetFps) && range.getUpper().equals(targetFps)) {
+                    exact = range;
+                    break;
+                }
+                if (best == null
+                        || range.getUpper() < best.getUpper()
+                        || (range.getUpper().equals(best.getUpper())
+                        && range.getLower() > best.getLower())) {
+                    best = range;
+                }
+            }
+        }
+        if (exact != null) {
+            return exact;
+        }
+        if (best != null) {
+            return best;
+        }
+        return fpsRanges[0];
     }
 
     // 主动获取图像的方法
