@@ -34,12 +34,12 @@ class SIPSDKMediaConfig {
               profileLevelId: '42e01e',
               packetizationMode: '1',
             ),
-        decodeConfig = decodeConfig ??
+      decodeConfig = decodeConfig ??
             SIPSDKVideoDecodeConfig(
               enable: true,
               maxWidth: 1920,
               maxHeight: 1080,
-              combinSpsPpsIdr: false,
+              combinSpsPpsIdr: true,
             ),
         encodeConfig = encodeConfig ??
             SIPSDKVideoEncodeConfig(

@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_local_config.dart';
+import 'dart:typed_data';
 
 import 'entitys/sip_sdk_camera_config.dart';
 import 'entitys/sip_sdk_config.dart';
@@ -62,6 +63,30 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('cameraClose() has not been implemented.');
   }
 
+  Future<Uint8List?> captureSnapshot() {
+    throw UnimplementedError('captureSnapshot() has not been implemented.');
+  }
+
+  /// 截取对方视频画面并保存为 JPG 到外部存储
+  /// `Documents/Doorbell/<deviceName>/`，返回保存路径。
+  Future<String?> captureSnapshotToDocuments(String deviceName) {
+    throw UnimplementedError(
+      'captureSnapshotToDocuments() has not been implemented.',
+    );
+  }
+
+  Future<String?> startVideoRecording(String deviceName) {
+    throw UnimplementedError(
+      'startVideoRecording() has not been implemented.',
+    );
+  }
+
+  Future<String?> stopVideoRecording() {
+    throw UnimplementedError(
+      'stopVideoRecording() has not been implemented.',
+    );
+  }
+
   Future<String?> call(
     int type, {
     String? username,
@@ -106,7 +131,7 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('destroy() has not been implemented.');
   }
 
-  Future<void> startRecording() {
+  Future<void> startRecording([int? sampleRate]) {
     throw UnimplementedError('startRecording() has not been implemented.');
   }
 
@@ -114,7 +139,7 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('stopRecording() has not been implemented.');
   }
 
-  Future<void> startPlaying() {
+  Future<void> startPlaying([int? sampleRate]) {
     throw UnimplementedError('startPlaying() has not been implemented.');
   }
 

@@ -107,6 +107,13 @@ public class H264CodecImpl extends H264Codec {
         void onCallback(long callUuid, ByteBuffer outData, int outDataSize, int width, int height);
     }
 
+    public interface RawFrameCallback {
+        void onRawFrame(long callUuid, byte[] data, int dataSize, int width, int height,
+                        boolean keyframe, byte[] sps, byte[] pps);
+    }
+
+    private static final List<RawFrameCallback> rawListeners = new CopyOnWriteArrayList<>();
+
     public static void addListener(DecodeCallback listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
@@ -115,6 +122,16 @@ public class H264CodecImpl extends H264Codec {
 
     public static void removeListener(DecodeCallback listener) {
         listeners.remove(listener);
+    }
+
+    public static void addRawListener(RawFrameCallback listener) {
+        if (!rawListeners.contains(listener)) {
+            rawListeners.add(listener);
+        }
+    }
+
+    public static void removeRawListener(RawFrameCallback listener) {
+        rawListeners.remove(listener);
     }
 
     public H264CodecImpl(long callUuid) {
@@ -344,6 +361,23 @@ public class H264CodecImpl extends H264Codec {
         if (decodedSize > outData.capacity()) {
             Log.e(TAG, "decoded frame too large for buffer, size=" + decodedSize + ", capacity=" + outData.capacity());
             return -1;
+        }
+        if (!rawListeners.isEmpty()) {
+            byte[] frameSps = cachedSps == null ? null : Arrays.copyOf(cachedSps, cachedSps.length);
+            byte[] framePps = cachedPps == null ? null : Arrays.copyOf(cachedPps, cachedPps.length);
+            byte[] frameBytes = Arrays.copyOf(decodeData, decodeDataSize);
+            for (RawFrameCallback callback : rawListeners) {
+                callback.onRawFrame(
+                        callUuid,
+                        frameBytes,
+                        frameBytes.length,
+                        decodedWidth,
+                        decodedHeight,
+                        containsIdr,
+                        frameSps,
+                        framePps
+                );
+            }
         }
         ByteBuffer frameBuffer = outData.duplicate();
         frameBuffer.position(0);

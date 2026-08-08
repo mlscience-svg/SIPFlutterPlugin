@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -140,6 +141,31 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   }
 
   @override
+  Future<Uint8List?> captureSnapshot() async {
+    return await methodChannel.invokeMethod<Uint8List>('captureSnapshot');
+  }
+
+  @override
+  Future<String?> captureSnapshotToDocuments(String deviceName) async {
+    return await methodChannel.invokeMethod<String>(
+      'saveSnapshotToDocuments',
+      {'deviceName': deviceName},
+    );
+  }
+
+  @override
+  Future<String?> startVideoRecording(String deviceName) async {
+    return await methodChannel.invokeMethod<String>('startVideoRecording', {
+      'deviceName': deviceName,
+    });
+  }
+
+  @override
+  Future<String?> stopVideoRecording() async {
+    return await methodChannel.invokeMethod<String>('stopVideoRecording');
+  }
+
+  @override
   Future<String?> call(
     int type, {
     String? username,
@@ -214,8 +240,10 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   }
 
   @override
-  Future<Void?> startRecording() async {
-    return await methodChannel.invokeMethod<Void>('startRecording');
+  Future<Void?> startRecording([int? sampleRate]) async {
+    return await methodChannel.invokeMethod<Void>('startRecording', {
+      'sampleRate': sampleRate,
+    });
   }
 
   @override
@@ -224,8 +252,10 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   }
 
   @override
-  Future<Void?> startPlaying() async {
-    return await methodChannel.invokeMethod<Void>('startPlaying');
+  Future<Void?> startPlaying([int? sampleRate]) async {
+    return await methodChannel.invokeMethod<Void>('startPlaying', {
+      'sampleRate': sampleRate,
+    });
   }
 
   @override

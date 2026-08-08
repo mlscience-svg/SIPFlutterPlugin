@@ -18,6 +18,8 @@ class SIPSDKConfig {
   final bool doesItSupportBroadcast;
   final String? customSessionName;
   final int localCallUpdateTime;
+  final int tcpKeepAliveInterval;
+  final bool tcpDisconnectOnSilence;
   final STUNConfig? stunConfig;
   final SIPSDKMediaConfig? mediaConfig;
 
@@ -38,6 +40,8 @@ class SIPSDKConfig {
     this.doesItSupportBroadcast = false,
     this.customSessionName,
     this.localCallUpdateTime = 60,
+    this.tcpKeepAliveInterval = 60,
+    this.tcpDisconnectOnSilence = false,
     this.stunConfig,
     this.mediaConfig,
   });
@@ -60,6 +64,8 @@ class SIPSDKConfig {
       'doesItSupportBroadcast': doesItSupportBroadcast,
       'customSessionName': customSessionName,
       'localCallUpdateTime': localCallUpdateTime,
+      'tcpKeepAliveInterval': tcpKeepAliveInterval,
+      'tcpDisconnectOnSilence': tcpDisconnectOnSilence,
       'stunConfig': stunConfig?.toJson(),
       'mediaConfig': mediaConfig?.toJson(),
     };
@@ -86,6 +92,9 @@ class SIPSDKConfig {
       doesItSupportBroadcast: json['doesItSupportBroadcast'] as bool? ?? false,
       customSessionName: json['customSessionName'] as String?,
       localCallUpdateTime: json['localCallUpdateTime'] as int? ?? 60,
+      tcpKeepAliveInterval: json['tcpKeepAliveInterval'] as int? ?? 60,
+      tcpDisconnectOnSilence:
+          json['tcpDisconnectOnSilence'] as bool? ?? false,
       stunConfig: json['stunConfig'] != null &&
               json['stunConfig'] is Map<String, dynamic>
           ? STUNConfig.fromJson(json['stunConfig'] as Map<String, dynamic>)

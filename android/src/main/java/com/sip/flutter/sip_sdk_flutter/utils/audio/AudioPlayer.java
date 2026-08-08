@@ -7,6 +7,8 @@ import android.util.Log;
 
 public class AudioPlayer {
     private final String TAG = AudioPlayer.class.getName();
+    private int sampleRate = 16000;
+    private int frameSize = 640;
     private AudioTrack audioTrack;
 
     private static class Instance {
@@ -17,17 +19,29 @@ public class AudioPlayer {
         return AudioPlayer.Instance.instance;
     }
 
+    public void setSampleRate(int sampleRate) {
+        if (sampleRate > 0) {
+            this.sampleRate = sampleRate;
+            this.frameSize = Math.max(1, sampleRate / 50 * 2);
+        }
+    }
+
+    public int getSampleRate() {
+        return sampleRate;
+    }
+
     public void init() {
-        int sampleRate = 16000;  // 采样率
+        destroy();
         int channelConfig = AudioFormat.CHANNEL_OUT_MONO;  // 单声道
         int audioFormat = AudioFormat.ENCODING_PCM_16BIT;  // 16位 PCM 数据
+        int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig, audioFormat);
         // 创建 AudioTrack 对象
         audioTrack = new AudioTrack(
                 AudioManager.STREAM_MUSIC,   // 使用音乐流
                 sampleRate,                  // 采样率
                 channelConfig,               // 声道配置（单声道）
                 audioFormat,                 // 音频数据格式
-                AudioTrack.getMinBufferSize(sampleRate, channelConfig, audioFormat),  // 缓冲区大小
+                minBufferSize,  // 缓冲区大小
                 AudioTrack.MODE_STREAM);     // 流模式
 
         // 检查 AudioTrack 是否初始化成功
@@ -36,6 +50,7 @@ public class AudioPlayer {
             destroy();
             return;
         }
+        Log.i(TAG, "AudioTrack init: sampleRate=" + sampleRate + ", frameSize=" + frameSize + ", minBufferSize=" + minBufferSize);
         // 启动播放
         audioTrack.play();
     }
@@ -46,10 +61,7 @@ public class AudioPlayer {
             if (audioTrack == null) return;
             int offset = 0;
             while (offset < data.length) {
-                // 每次读取 640 字节数据
-                // 每次播放的 PCM 数据块大小
-                int chunkSize = 640;
-                int bytesToWrite = Math.min(chunkSize, data.length - offset);
+                int bytesToWrite = Math.min(frameSize, data.length - offset);
                 audioTrack.write(data, offset, bytesToWrite);
                 offset += bytesToWrite;
             }
@@ -61,7 +73,10 @@ public class AudioPlayer {
     // 停止播放
     public void destroy() {
         if (audioTrack != null) {
-            audioTrack.stop();
+            try {
+                audioTrack.stop();
+            } catch (IllegalStateException ignored) {
+            }
             audioTrack.release();
             audioTrack = null;
         }

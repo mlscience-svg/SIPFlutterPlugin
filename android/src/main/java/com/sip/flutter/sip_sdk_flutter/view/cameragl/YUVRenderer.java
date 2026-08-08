@@ -5,6 +5,8 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
@@ -20,12 +22,48 @@ public class YUVRenderer implements Renderer {
     private int mVideoWidth, mVideoHeight;
     private ByteBuffer pendingFrame;
     private ByteBuffer renderFrame;
+    private int renderWidth;
+    private int renderHeight;
     private int pendingWidth;
     private int pendingHeight;
     private int pendingFrameSize;
     private boolean hasPendingFrame;
     private boolean hasUploadedFrame;
     private int droppedFrameCount;
+
+    /** 当前正在显示的原始视频帧（I420 格式）及真实分辨率。 */
+    public static class FrameData {
+        public final ByteBuffer data; // I420: Y 平面 + U 平面 + V 平面，已 flip
+        public final int width;
+        public final int height;
+
+        FrameData(ByteBuffer data, int width, int height) {
+            this.data = data;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    /**
+     * 抓取当前已经上屏的那一帧的副本（I420 + 原始分辨率）。
+     * 与 GL 线程通过 frameLock 同步，可安全地从后台线程调用。
+     * 尚未解码出任何帧时返回 null。
+     */
+    @Nullable
+    public FrameData grabFrame() {
+        synchronized (frameLock) {
+            if (renderFrame == null) {
+                return null;
+            }
+            ByteBuffer copy = ByteBuffer.allocateDirect(renderFrame.capacity());
+            ByteBuffer src = renderFrame.duplicate();
+            src.position(0);
+            src.limit(renderFrame.limit());
+            copy.put(src);
+            copy.flip();
+            return new FrameData(copy, renderWidth, renderHeight);
+        }
+    }
 
     public YUVRenderer(GLSurfaceView surface) {
         mTargetSurface = surface;
@@ -60,6 +98,8 @@ public class YUVRenderer implements Renderer {
                 frameWidth = pendingWidth;
                 frameHeight = pendingHeight;
                 frameSize = pendingFrameSize;
+                renderWidth = pendingWidth;
+                renderHeight = pendingHeight;
                 hasPendingFrame = false;
             }
         }

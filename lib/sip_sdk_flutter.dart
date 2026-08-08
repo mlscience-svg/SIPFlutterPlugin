@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:sip_sdk_flutter/entitys/sip_sdk_local_config.dart';
 import 'package:sip_sdk_flutter/sip_sdk_callbacks.dart';
@@ -39,6 +40,26 @@ class SipSdkFlutter {
 
   Future<void> cameraClose() {
     return SipSdkFlutterPlatform.instance.cameraClose();
+  }
+
+  Future<Uint8List?> captureSnapshot() {
+    return SipSdkFlutterPlatform.instance.captureSnapshot();
+  }
+
+  /// 截取对方视频画面并保存为 JPG 到外部存储
+  /// `Documents/Doorbell/<deviceName>/`，返回保存路径。
+  Future<String?> captureSnapshotToDocuments(String deviceName) {
+    return SipSdkFlutterPlatform.instance.captureSnapshotToDocuments(deviceName);
+  }
+
+  /// 开始录制通话视频。`deviceName` 用于把录制完成的视频归档到外部存储
+  /// `Documents/Doorbell/<deviceName>/` 目录下，返回录制的临时路径或 null。
+  Future<String?> startVideoRecording(String deviceName) {
+    return SipSdkFlutterPlatform.instance.startVideoRecording(deviceName);
+  }
+
+  Future<String?> stopVideoRecording() {
+    return SipSdkFlutterPlatform.instance.stopVideoRecording();
   }
 
   Future<String?> call(
@@ -97,16 +118,16 @@ class SipSdkFlutter {
     return SipSdkFlutterPlatform.instance.destroy();
   }
 
-  Future<void> startRecording() {
-    return SipSdkFlutterPlatform.instance.startRecording();
+  Future<void> startRecording([int? sampleRate]) {
+    return SipSdkFlutterPlatform.instance.startRecording(sampleRate);
   }
 
   Future<void> stopRecording() {
     return SipSdkFlutterPlatform.instance.stopRecording();
   }
 
-  Future<void> startPlaying() {
-    return SipSdkFlutterPlatform.instance.startPlaying();
+  Future<void> startPlaying([int? sampleRate]) {
+    return SipSdkFlutterPlatform.instance.startPlaying(sampleRate);
   }
 
   Future<void> stopPlaying() {

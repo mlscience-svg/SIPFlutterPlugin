@@ -83,6 +83,11 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             }
         case "cameraClose":
             cameraClose(args: [:], result: result)
+        case "captureSnapshot":
+            captureSnapshot(args: [:], result: result)
+        case "saveSnapshotToDocuments":
+            let args = call.arguments as? [String: Any] ?? [:]
+            saveSnapshotToDocuments(args: args, result: result)
         case "call":
             if let args = call.arguments as? [String: Any] {
                 self.call(args: args, result: result)
@@ -416,6 +421,72 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     private func cameraClose(args _: [String: Any], result: @escaping FlutterResult) {
         CameraCaptureManager.shared.stop()
         result(nil)
+    }
+
+    private func captureSnapshot(args _: [String: Any], result: @escaping FlutterResult) {
+        guard let view = VideoComponentView.currentInstance else {
+            result(nil)
+            return
+        }
+        view.captureSnapshot { data in
+            guard let data else {
+                result(nil)
+                return
+            }
+            result(FlutterStandardTypedData(bytes: data))
+        }
+    }
+
+    /**
+     * 截取对方视频画面并保存为 JPG 到 Documents/Doorbell/<设备名>/。
+     * iOS 无外部存储概念，保存到应用 Documents 目录，
+     * 宿主开启文件共享后可通过 Finder/iTunes 导出。
+     */
+    private func saveSnapshotToDocuments(args: [String: Any], result: @escaping FlutterResult) {
+        guard let deviceName = args["deviceName"] as? String, !deviceName.isEmpty else {
+            result(nil)
+            return
+        }
+        guard let view = VideoComponentView.currentInstance else {
+            result(nil)
+            return
+        }
+        view.captureSnapshot { data in
+            guard let data, let image = UIImage(data: data) else {
+                result(nil)
+                return
+            }
+            guard let jpegData = image.jpegData(compressionQuality: 1.0) else {
+                result(nil)
+                return
+            }
+            let safeName = Self.sanitizeFolderName(deviceName)
+            let fileName = "call_\(Int64(Date().timeIntervalSince1970 * 1000)).jpg"
+            let docs = NSSearchPathForDirectoriesInDomains(
+                .documentDirectory, .userDomainMask, true).first ?? ""
+            let dir = (docs as NSString)
+                .appendingPathComponent("Doorbell")
+                .appendingPathComponent(safeName)
+            do {
+                try FileManager.default.createDirectory(
+                    atPath: dir, withIntermediateDirectories: true, attributes: nil)
+                let path = (dir as NSString).appendingPathComponent(fileName)
+                try jpegData.write(to: URL(fileURLWithPath: path))
+                result(path)
+            } catch {
+                result(FlutterError(
+                    code: "SAVE_FAILED", message: error.localizedDescription, details: nil))
+            }
+        }
+    }
+
+    private static func sanitizeFolderName(_ name: String) -> String {
+        let invalid = CharacterSet(charactersIn: "/\\:*?\"<>|")
+        let safe = name
+            .components(separatedBy: invalid)
+            .joined(separator: "_")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return safe.isEmpty ? "Device" : safe
     }
 
     /**

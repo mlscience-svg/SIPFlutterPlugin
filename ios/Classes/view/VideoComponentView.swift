@@ -4,6 +4,7 @@ import SIPFramework
 import UIKit
 
 class VideoComponentView: NSObject, FlutterPlatformView {
+    static weak var currentInstance: VideoComponentView?
     private var _view: UIView
     var videoContainerView: UIView!
     private var videoLayer: AVSampleBufferDisplayLayer?
@@ -19,6 +20,7 @@ class VideoComponentView: NSObject, FlutterPlatformView {
     ) {
         _view = UIView()
         super.init()
+        VideoComponentView.currentInstance = self
         _view.backgroundColor = UIColor.black
         arguments = args
         createNativeView(view: _view)
@@ -39,6 +41,16 @@ class VideoComponentView: NSObject, FlutterPlatformView {
 
     func view() -> UIView {
         _view
+    }
+
+    func captureSnapshot(completion: @escaping (Data?) -> Void) {
+        DispatchQueue.main.async {
+            let renderer = UIGraphicsImageRenderer(bounds: self._view.bounds)
+            let image = renderer.image { _ in
+                self._view.drawHierarchy(in: self._view.bounds, afterScreenUpdates: true)
+            }
+            completion(image.pngData())
+        }
     }
 
     private func setupVideoView(view: UIView) {
@@ -75,6 +87,9 @@ class VideoComponentView: NSObject, FlutterPlatformView {
     }
 
     deinit {
+        if VideoComponentView.currentInstance === self {
+            VideoComponentView.currentInstance = nil
+        }
         NotificationCenter.default.removeObserver(self)
     }
 }

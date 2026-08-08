@@ -3,7 +3,15 @@ package com.sip.flutter.sip_sdk_flutter;
 import static com.sip.sdk.entity.SDKConstants.SDK_DTMF_INFO_TYPE;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 
@@ -15,7 +23,9 @@ import com.sip.flutter.sip_sdk_flutter.utils.audio.AudioHandle;
 import com.sip.flutter.sip_sdk_flutter.utils.audio.AudioPlayer;
 import com.sip.flutter.sip_sdk_flutter.utils.audio.AudioRecorder;
 import com.sip.flutter.sip_sdk_flutter.utils.camera.CameraHandle;
+import com.sip.flutter.sip_sdk_flutter.utils.media.CallMediaRecorder;
 import com.sip.flutter.sip_sdk_flutter.view.VideoComponentFactory;
+import com.sip.flutter.sip_sdk_flutter.view.VideoComponentView;
 import com.sip.sdk.SIPSDK;
 import com.sip.sdk.entity.SDKConstants;
 import com.sip.sdk.entity.SIPSDKCallParam;
@@ -29,6 +39,13 @@ import com.sip.sdk.entity.SIPSDKRegistrarConfig;
 import com.sip.sdk.entity.SIPSDKStunConfig;
 import com.sip.sdk.entity.SIPSDKTurnConfig;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +84,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         if (context == null) {
             context = flutterPluginBinding.getApplicationContext();
         }
+        H264CodecImpl.addRawListener(CallMediaRecorder.instance());
     }
 
     @Override
@@ -94,6 +112,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        H264CodecImpl.removeRawListener(CallMediaRecorder.instance());
         channel.setMethodCallHandler(null);
         channel = null;
         context = null;
@@ -116,6 +135,14 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             cameraOpen(call.arguments(), result);
         } else if (call.method.equals("cameraClose")) {
             cameraClose(call.arguments(), result);
+        } else if (call.method.equals("captureSnapshot")) {
+            captureSnapshot(call.arguments(), result);
+        } else if (call.method.equals("saveSnapshotToDocuments")) {
+            saveSnapshotToDocuments(call.arguments(), result);
+        } else if (call.method.equals("startVideoRecording")) {
+            startVideoRecording(call.arguments(), result);
+        } else if (call.method.equals("stopVideoRecording")) {
+            stopVideoRecording(call.arguments(), result);
         } else if (call.method.equals("call")) {
             call(call.arguments(), result);
         } else if (call.method.equals("answer")) {
@@ -210,6 +237,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         Map<String, Object> mediaDict = MapUtils.getMap(args, "mediaConfig");
         SIPSDKMediaConfig mediaConfig = new SIPSDKMediaConfig();
         if (mediaDict != null) {
+            mediaConfig.audioOnlyCallConfirmed = MapUtils.get(mediaDict, "audioOnlyCallConfirmed", true);
             mediaConfig.audioClockRate = MapUtils.get(mediaDict, "audioClockRate", 16000);
             mediaConfig.micGain = MapUtils.get(mediaDict, "micGain", 1.0f);
             mediaConfig.speakerGain = MapUtils.get(mediaDict, "speakerGain", 1.0f);
@@ -246,8 +274,12 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             }
         }
 
+        AudioRecorder.instance().setSampleRate(mediaConfig.audioClockRate);
+        AudioPlayer.instance().setSampleRate(mediaConfig.audioClockRate);
+
         SIPSDKConfig config = new SIPSDKConfig();
         config.logLevel = MapUtils.get(args, "logLevel", 4);
+        config.port = MapUtils.get(args, "port", 5060);
         config.userAgent = MapUtils.get(args, "userAgent", "");
         config.workerThreadCount = MapUtils.get(args, "workerThreadCount", 1);
         config.updateRoute = MapUtils.get(args, "updateRoute", false);
@@ -258,6 +290,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         config.doesItSupportBroadcast = MapUtils.get(args, "doesItSupportBroadcast", false);
         config.customSessionName = MapUtils.get(args, "customSessionName", null);
         config.localCallUpdateTime = MapUtils.get(args, "localCallUpdateTime", 60);
+        config.tcpKeepAliveInterval = MapUtils.get(args, "tcpKeepAliveInterval", 60);
+        config.tcpDisconnectOnSilence = MapUtils.get(args, "tcpDisconnectOnSilence", false);
         config.stunConfig = stunConfig;
         String baseUrl = MapUtils.get(args, "baseUrl", "");
         String clientId = MapUtils.get(args, "clientId", "");
@@ -281,6 +315,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         Map<String, Object> mediaDict = MapUtils.getMap(args, "mediaConfig");
         SIPSDKMediaConfig mediaConfig = new SIPSDKMediaConfig();
         if (mediaDict != null) {
+            mediaConfig.audioOnlyCallConfirmed = MapUtils.get(mediaDict, "audioOnlyCallConfirmed", true);
             mediaConfig.audioClockRate = MapUtils.get(mediaDict, "audioClockRate", 16000);
             mediaConfig.micGain = MapUtils.get(mediaDict, "micGain", 1.0f);
             mediaConfig.speakerGain = MapUtils.get(mediaDict, "speakerGain", 1.0f);
@@ -317,6 +352,9 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             }
         }
 
+        AudioRecorder.instance().setSampleRate(mediaConfig.audioClockRate);
+        AudioPlayer.instance().setSampleRate(mediaConfig.audioClockRate);
+
         SIPSDKConfig config = new SIPSDKConfig();
         config.logLevel = MapUtils.get(args, "logLevel", 4);
         config.port = MapUtils.get(args, "port", 5060);
@@ -330,6 +368,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         config.doesItSupportBroadcast = MapUtils.get(args, "doesItSupportBroadcast", false);
         config.customSessionName = MapUtils.get(args, "customSessionName", null);
         config.localCallUpdateTime = MapUtils.get(args, "localCallUpdateTime", 60);
+        config.tcpKeepAliveInterval = MapUtils.get(args, "tcpKeepAliveInterval", 60);
+        config.tcpDisconnectOnSilence = MapUtils.get(args, "tcpDisconnectOnSilence", false);
         config.stunConfig = stunConfig;
         String token = MapUtils.get(args, "token", "");
         String clientId = MapUtils.get(args, "clientId", "");
@@ -420,6 +460,227 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     private void cameraClose(Map<String, Object> args, MethodChannel.Result result) {
         CameraHandle.instance().close();
         result.success(null);
+    }
+
+    private void captureSnapshot(Map<String, Object> args, MethodChannel.Result result) {
+        VideoComponentView view = VideoComponentView.getCurrentInstance();
+        if (view == null) {
+            result.success(null);
+            return;
+        }
+        // I420→Bitmap→PNG 编码比较耗时，放到后台线程避免阻塞 UI。
+        new Thread(() -> {
+            Bitmap bitmap = view.captureBitmap();
+            if (bitmap == null) {
+                new Handler(Looper.getMainLooper()).post(() -> result.success(null));
+                return;
+            }
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            new Handler(Looper.getMainLooper())
+                    .post(() -> result.success(stream.toByteArray()));
+        }).start();
+    }
+
+    /**
+     * 截取对方视频画面并保存为 JPG 到公共目录 Documents/Doorbell/<设备名>/。
+     * Android 10+ 通过 MediaStore 写入（USB 可见、可导出、按设备区分）；
+     * Android 9 及以下直接写外部存储文件系统。
+     */
+    private void saveSnapshotToDocuments(Map<String, Object> args, MethodChannel.Result result) {
+        String deviceName = MapUtils.get(args, "deviceName", null);
+        if (deviceName == null || deviceName.isEmpty()) {
+            result.success(null);
+            return;
+        }
+        String safeName = sanitizeFolder(deviceName);
+        VideoComponentView view = VideoComponentView.getCurrentInstance();
+        if (view == null) {
+            result.success(null);
+            return;
+        }
+        // 抓原始帧、JPEG 编码（100% 质量）和 MediaStore 写入都比较耗时，
+        // 放到后台线程避免阻塞 UI，完成后回主线程回调结果。
+        new Thread(() -> {
+            Bitmap bitmap = view.captureBitmap();
+            if (bitmap == null) {
+                postResult(result, null, null);
+                return;
+            }
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output);
+            String fileName = "call_" + System.currentTimeMillis() + ".jpg";
+            try {
+                String path = saveToDocuments(output.toByteArray(), fileName, safeName);
+                postResult(result, path, null);
+            } catch (Exception e) {
+                postResult(result, null, e);
+            }
+        }).start();
+    }
+
+    private void postResult(MethodChannel.Result result, String path, Exception error) {
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (error != null) {
+                result.error("SAVE_FAILED", error.getMessage(), null);
+            } else {
+                result.success(path);
+            }
+        });
+    }
+
+    private String saveToDocuments(byte[] bytes, String fileName, String folder)
+            throws IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // MediaStore.Downloads 集合只允许 Download 主目录，所以改用
+            // MediaStore.Files 集合，它支持任意的标准目录（Documents 等）。
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOCUMENTS + "/Doorbell/" + folder);
+            Uri uri = context.getContentResolver().insert(
+                    MediaStore.Files.getContentUri("external"), values);
+            if (uri == null) {
+                throw new IOException("Failed to create MediaStore entry");
+            }
+            try (OutputStream os = context.getContentResolver().openOutputStream(uri)) {
+                if (os == null) {
+                    throw new IOException("Failed to open output stream");
+                }
+                os.write(bytes);
+            }
+            return uri.toString();
+        } else {
+            File dir = new File(Environment.getExternalStorageDirectory(),
+                    "Documents/Doorbell/" + folder);
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw new IOException("Failed to create directory: " + dir);
+            }
+            File file = new File(dir, fileName);
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(bytes);
+            }
+            return file.getAbsolutePath();
+        }
+    }
+
+    private String sanitizeFolder(String folder) {
+        return folder.replaceAll("[/\\\\:*?\"<>|]", "_");
+    }
+
+    /** 本次录制完成后要归档到的目录名（Documents/Doorbell/<folder>/）。 */
+    private String pendingRecordFolder;
+
+    private void startVideoRecording(Map<String, Object> args, MethodChannel.Result result) {
+        String deviceName = MapUtils.get(args, "deviceName", null);
+        if (deviceName == null || deviceName.isEmpty()) {
+            result.success(null);
+            return;
+        }
+        String safeName = sanitizeFolder(deviceName);
+        // 录制期间先写到 app 私有缓存，stop 时再搬到外部存储 Documents/Doorbell/<设备名>/，
+        // 避免通话中断时在用户的公共目录里留下半个损坏的 mp4。
+        File recordDir = new File(context.getCacheDir(), "call_recordings");
+        if (recordDir.exists()) {
+            File[] stale = recordDir.listFiles();
+            if (stale != null) {
+                for (File f : stale) {
+                    f.delete();
+                }
+            }
+        } else if (!recordDir.mkdirs()) {
+            result.success(null);
+            return;
+        }
+        String fileName = "call_" + System.currentTimeMillis() + ".mp4";
+        String tempPath = new File(recordDir, fileName).getAbsolutePath();
+        String savedPath = CallMediaRecorder.instance().start(
+                tempPath, AudioPlayer.instance().getSampleRate());
+        if (savedPath == null) {
+            result.success(null);
+            return;
+        }
+        pendingRecordFolder = safeName;
+        result.success(savedPath);
+    }
+
+    private void stopVideoRecording(Map<String, Object> args, MethodChannel.Result result) {
+        // muxer 收尾和文件搬到外部存储都比较耗时，放到后台线程。
+        new Thread(() -> {
+            String tempPath = CallMediaRecorder.instance().stop();
+            if (tempPath == null) {
+                postResult(result, null, null);
+                return;
+            }
+            String folder = pendingRecordFolder;
+            pendingRecordFolder = null;
+            if (folder == null || folder.isEmpty()) {
+                postResult(result, null, null);
+                return;
+            }
+            try {
+                String uri = writeVideoToDocuments(new File(tempPath), folder);
+                postResult(result, uri, null);
+            } catch (Exception e) {
+                postResult(result, null, e);
+            }
+        }).start();
+    }
+
+    /**
+     * 把录制的临时 mp4 流式拷贝到外部存储 Documents/Doorbell/<folder>/，
+     * 拷贝完成返回目标（API 29+ 为 content:// URI，API <=28 为文件路径），
+     * 同时删除临时文件。大文件全程走 64KB 缓冲，不整包加载到内存。
+     */
+    private String writeVideoToDocuments(File source, String folder) throws IOException {
+        if (!source.exists() || source.length() <= 0) {
+            throw new IOException("Recording file is empty");
+        }
+        String fileName = source.getName();
+        String mimeType = "video/mp4";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOCUMENTS + "/Doorbell/" + folder);
+            Uri uri = context.getContentResolver().insert(
+                    MediaStore.Files.getContentUri("external"), values);
+            if (uri == null) {
+                throw new IOException("Failed to create MediaStore entry");
+            }
+            try (OutputStream os = context.getContentResolver().openOutputStream(uri)) {
+                if (os == null) {
+                    throw new IOException("Failed to open output stream");
+                }
+                copyFileTo(source, os);
+            }
+            source.delete();
+            return uri.toString();
+        } else {
+            File dir = new File(Environment.getExternalStorageDirectory(),
+                    "Documents/Doorbell/" + folder);
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw new IOException("Failed to create directory: " + dir);
+            }
+            File target = new File(dir, fileName);
+            try (FileOutputStream fos = new FileOutputStream(target)) {
+                copyFileTo(source, fos);
+            }
+            source.delete();
+            return target.getAbsolutePath();
+        }
+    }
+
+    private void copyFileTo(File source, OutputStream os) throws IOException {
+        try (InputStream in = new FileInputStream(source)) {
+            byte[] buffer = new byte[64 * 1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                os.write(buffer, 0, read);
+            }
+        }
     }
 
     private void call(Map<String, Object> args, MethodChannel.Result result) {
@@ -521,6 +782,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
      * 开始录音
      */
     private void startRecording(Map<String, Object> args, MethodChannel.Result result) {
+        int sampleRate = MapUtils.get(args, "sampleRate", AudioRecorder.instance().getSampleRate());
+        AudioRecorder.instance().setSampleRate(sampleRate);
         AudioRecorder.instance().init();
         result.success(null);
     }
@@ -537,6 +800,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
      * 开始播放
      */
     private void startPlaying(Map<String, Object> args, MethodChannel.Result result) {
+        int sampleRate = MapUtils.get(args, "sampleRate", AudioPlayer.instance().getSampleRate());
+        AudioPlayer.instance().setSampleRate(sampleRate);
         AudioPlayer.instance().init();
         result.success(null);
     }
@@ -562,11 +827,13 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
 
     private void isSpeaker(Map<String, Object> args, MethodChannel.Result result) {
         boolean speaker = AudioHandle.instance().isSpeakerphoneOn();
+        android.util.Log.d("SIPSDK", "isSpeaker => " + speaker);
         result.success(speaker);
     }
 
     private void setSpeaker(Map<String, Object> args, MethodChannel.Result result) {
         boolean speaker = MapUtils.get(args, "speaker", true);
+        android.util.Log.d("SIPSDK", "setSpeaker <= " + speaker);
         AudioHandle.instance().speakerSwitch(speaker);
         result.success(null);
     }

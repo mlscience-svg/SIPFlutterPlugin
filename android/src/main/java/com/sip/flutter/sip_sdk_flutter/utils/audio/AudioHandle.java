@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioManager;
 
 import com.sip.flutter.sip_sdk_flutter.SipSdkFlutterPlugin;
+import com.sip.flutter.sip_sdk_flutter.utils.media.CallMediaRecorder;
 import com.sip.sdk.SIPSDK;
 import com.sip.sdk.codes.PCMData;
 import com.sip.sdk.i.SIPSDKMediaListener;
@@ -79,6 +80,7 @@ public class AudioHandle implements SIPSDKMediaListener.PCMReadListener,
 
     @Override
     public int pcmWriteFrame(byte[] data, int dataSize) {
+        CallMediaRecorder.instance().onAudioFrame(data, dataSize, AudioPlayer.instance().getSampleRate());
         AudioPlayer.instance().play(data);
         return 0;
     }
