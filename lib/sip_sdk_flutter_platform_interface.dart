@@ -67,15 +67,14 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('captureSnapshot() has not been implemented.');
   }
 
-  /// 截取对方视频画面并保存为 JPG 到外部存储
-  /// `Documents/Doorbell/<deviceName>/`，返回保存路径。
-  Future<String?> captureSnapshotToDocuments(String deviceName) {
+  /// 截取对方视频画面并保存为 JPG 到 `relativePath`（相对媒体根目录的完整路径，含文件名）。
+  Future<String?> captureSnapshotToPath(String relativePath) {
     throw UnimplementedError(
-      'captureSnapshotToDocuments() has not been implemented.',
+      'captureSnapshotToPath() has not been implemented.',
     );
   }
 
-  Future<String?> startVideoRecording(String deviceName) {
+  Future<String?> startVideoRecording(String relativePath) {
     throw UnimplementedError(
       'startVideoRecording() has not been implemented.',
     );
@@ -85,6 +84,41 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
     throw UnimplementedError(
       'stopVideoRecording() has not been implemented.',
     );
+  }
+
+  /// 查询已保存的拍照 / 录制视频文件（见 [SipSdkFlutter.queryMediaFiles]）。
+  Future<List<Map<String, dynamic>>?> queryMediaFiles() {
+    throw UnimplementedError('queryMediaFiles() has not been implemented.');
+  }
+
+  /// 一次性迁移旧媒体目录到 app 公共根目录（见 [SipSdkFlutter.migrateMediaToAppRoot]）。
+  Future<void> migrateMediaToAppRoot() {
+    throw UnimplementedError('migrateMediaToAppRoot() has not been implemented.');
+  }
+
+  /// 读取媒体条目缩略图（见 [SipSdkFlutter.loadMediaThumbnail]）。
+  Future<Uint8List?> loadMediaThumbnail(String uri, int maxSize) {
+    throw UnimplementedError('loadMediaThumbnail() has not been implemented.');
+  }
+
+  /// 读取媒体条目完整字节（见 [SipSdkFlutter.loadMediaBytes]）。
+  Future<Uint8List?> loadMediaBytes(String uri) {
+    throw UnimplementedError('loadMediaBytes() has not been implemented.');
+  }
+
+  /// 全屏播放视频（见 [SipSdkFlutter.playMediaVideo]）。
+  Future<void> playMediaVideo(String uri) {
+    throw UnimplementedError('playMediaVideo() has not been implemented.');
+  }
+
+  /// 保存媒体条目到系统相册（见 [SipSdkFlutter.saveMediaToAlbum]）。
+  Future<bool> saveMediaToAlbum(String uri, {bool isVideo = false}) {
+    throw UnimplementedError('saveMediaToAlbum() has not been implemented.');
+  }
+
+  /// 批量删除媒体条目（见 [SipSdkFlutter.deleteMediaFiles]）。
+  Future<bool> deleteMediaFiles(List<String> uris) {
+    throw UnimplementedError('deleteMediaFiles() has not been implemented.');
   }
 
   Future<String?> call(
@@ -161,5 +195,13 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
 
   Future<void> setSpeaker(bool speaker) {
     throw UnimplementedError('setSpeaker() has not been implemented.');
+  }
+
+  Future<void> setImageRatio(bool originalRatio) {
+    throw UnimplementedError('setImageRatio() has not been implemented.');
+  }
+
+  Future<void> clearVideo() {
+    throw UnimplementedError('clearVideo() has not been implemented.');
   }
 }

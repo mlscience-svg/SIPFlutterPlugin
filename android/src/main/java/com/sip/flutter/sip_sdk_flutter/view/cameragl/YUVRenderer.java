@@ -30,6 +30,8 @@ public class YUVRenderer implements Renderer {
     private boolean hasPendingFrame;
     private boolean hasUploadedFrame;
     private int droppedFrameCount;
+    /** true=铺满（拉伸铺满，变形），false=1:1 按实际比例居中留黑边。默认1:1。 */
+    private volatile boolean fillScreen = false;
 
     /** 当前正在显示的原始视频帧（I420 格式）及真实分辨率。 */
     public static class FrameData {
@@ -81,6 +83,7 @@ public class YUVRenderer implements Renderer {
         mScreenWidth = width;
         mScreenHeight = height;
         GLES20.glViewport(0, 0, width, height);
+        updateVertices();
     }
 
     @Override
@@ -115,7 +118,8 @@ public class YUVRenderer implements Renderer {
             hasUploadedFrame = true;
         }
 
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        // 清屏色用深灰（0xFF2E2E2E）而非纯黑，让视频区域（含 1:1 黑边）与上下纯黑功能条能区分开
+        GLES20.glClearColor(0.18f, 0.18f, 0.18f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         if (hasUploadedFrame) {
             prog.drawFrame();
@@ -123,25 +127,70 @@ public class YUVRenderer implements Renderer {
     }
 
     private void resize(int width, int height) {
-        // 初始化容器
         if (width != mVideoWidth || height != mVideoHeight) {
-            // 调整比例
-            if (mScreenWidth > 0 && mScreenHeight > 0) {
-                float screenRadio = 1.0f * mScreenHeight / mScreenWidth;
-                float videoRadio = 1.0f * height / width;
-                if (screenRadio == videoRadio) {
-                    prog.createBuffers(GLProgram.squareVertices);
-                } else if (screenRadio < videoRadio) {
-                    float widScale = screenRadio / videoRadio;
-                    prog.createBuffers(new float[]{-widScale, -1.0f, widScale, -1.0f, -widScale, 1.0f, widScale, 1.0f,});
-                } else {
-                    float heightScale = videoRadio / screenRadio;
-                    prog.createBuffers(new float[]{-1.0f, -heightScale, 1.0f, -heightScale, -1.0f, heightScale, 1.0f, heightScale,});
-                }
-            }
-
             this.mVideoWidth = width;
             this.mVideoHeight = height;
+            updateVertices();
+        }
+    }
+
+    /**
+     * 切换视频显示比例。
+     * fill=true 铺满：拉伸铺满整个视口（会变形）；
+     * fill=false 1:1：按实际比例居中显示，上下/左右留黑边。
+     * 默认 1:1。顶点在渲染线程重建，避免跨线程调用 GL。
+     */
+    public void setFillScreen(boolean fill) {
+        if (fillScreen == fill) {
+            return;
+        }
+        fillScreen = fill;
+        mTargetSurface.queueEvent(this::updateVertices);
+        mTargetSurface.requestRender();
+    }
+
+    /**
+     * 清除已上屏的最后一帧。之后 onDrawFrame 只画清屏色（深灰），不再绘制旧画面；
+     * 用于挂断/切换通道时清掉上一通道的残留帧。下一帧解码数据到达后自动恢复显示。
+     * 通过 queueEvent 在 GL 线程执行，与 onDrawFrame 顺序一致，线程安全。
+     */
+    public void clearFrame() {
+        mTargetSurface.queueEvent(() -> {
+            synchronized (frameLock) {
+                hasUploadedFrame = false;
+                hasPendingFrame = false;
+                pendingFrame = null;
+                renderFrame = null;
+                pendingWidth = 0;
+                pendingHeight = 0;
+                renderWidth = 0;
+                renderHeight = 0;
+                pendingFrameSize = 0;
+            }
+        });
+        mTargetSurface.requestRender();
+    }
+
+    private void updateVertices() {
+        if (mScreenWidth <= 0 || mScreenHeight <= 0 || mVideoWidth <= 0 || mVideoHeight <= 0) {
+            return;
+        }
+        if (fillScreen) {
+            // 铺满：拉伸铺满整个视口
+            prog.createBuffers(GLProgram.squareVertices);
+            return;
+        }
+        // 1:1：按实际比例居中，留黑边
+        float screenRadio = 1.0f * mScreenHeight / mScreenWidth;
+        float videoRadio = 1.0f * mVideoHeight / mVideoWidth;
+        if (screenRadio == videoRadio) {
+            prog.createBuffers(GLProgram.squareVertices);
+        } else if (screenRadio < videoRadio) {
+            float widScale = screenRadio / videoRadio;
+            prog.createBuffers(new float[]{-widScale, -1.0f, widScale, -1.0f, -widScale, 1.0f, widScale, 1.0f,});
+        } else {
+            float heightScale = videoRadio / screenRadio;
+            prog.createBuffers(new float[]{-1.0f, -heightScale, 1.0f, -heightScale, -1.0f, heightScale, 1.0f, heightScale,});
         }
     }
 

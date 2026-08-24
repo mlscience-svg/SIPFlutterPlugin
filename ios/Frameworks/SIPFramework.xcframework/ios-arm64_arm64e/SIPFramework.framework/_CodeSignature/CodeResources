@@ -10,7 +10,7 @@
 		</data>
 		<key>Headers/sip_sdk.h</key>
 		<data>
-		Sep3yPZAy0cZf6rreNl7ipTVbz8=
+		ZojRuzGTWCOVqgaTpiwDgyvpLQc=
 		</data>
 		<key>Headers/sip_sdk_aec.h</key>
 		<data>
@@ -22,7 +22,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		Kt8oeNYwo1OvFBDacVumuaNiq78=
+		pt6Y1Lq90qVnq8jAS6J5Y0OwFow=
 		</data>
 		<key>Modules/SIPFramework.swiftmodule/arm64-apple-ios.abi.json</key>
 		<data>
@@ -70,7 +70,7 @@
 		</data>
 		<key>make_xcframework.sh</key>
 		<data>
-		hp3h6sFxaKhKLWw0xs4iAHmfTFM=
+		Q7A0lvOlxZJEP7qrHj4N0wmKCFU=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -86,7 +86,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			k4ovz9iCc/vtkmpQmIKUCmjuiiuGjcEw3fOILiDnY4A=
+			IZANLqMR+vCghwXHq+nPiG7TgYGzF2HpOWL60t8vv/8=
 			</data>
 		</dict>
 		<key>Headers/sip_sdk_aec.h</key>
@@ -184,7 +184,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			f7qplvFz+o7ORJxqO6zZ+A45pb2gL1ZAF9iLfCcdAXo=
+			RIDigJ3W/O2dJzwWR1VxGJ8G+eBIdVyeIM/Bdf+OL/Y=
 			</data>
 		</dict>
 	</dict>

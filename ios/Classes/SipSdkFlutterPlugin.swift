@@ -1,9 +1,21 @@
 import Flutter
 import SIPFramework
 import UIKit
+import AVFoundation
+import AVKit
+import ImageIO
+import Photos
 
 public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     static var channel: FlutterMethodChannel?
+
+    /// 打印当前加载的 SIPFramework 版本,用于确认打包的 SDK 是否已更新
+    private func printSIPFrameworkVersion() {
+        let fw = Bundle(identifier: "com.sip.SIPFramework")
+        let ver = fw?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = fw?.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        print("🔧 [SIPSDK] SIPFramework loaded version: \(ver) (build \(build))")
+    }
 
     private func uint32Value(_ value: Any?, default defaultValue: UInt32 = 0) -> UInt32 {
         if let value = value as? UInt32 {
@@ -88,6 +100,11 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         case "saveSnapshotToDocuments":
             let args = call.arguments as? [String: Any] ?? [:]
             saveSnapshotToDocuments(args: args, result: result)
+        case "startVideoRecording":
+            let args = call.arguments as? [String: Any] ?? [:]
+            startVideoRecording(args: args, result: result)
+        case "stopVideoRecording":
+            stopVideoRecording(result: result)
         case "call":
             if let args = call.arguments as? [String: Any] {
                 self.call(args: args, result: result)
@@ -148,12 +165,35 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             } else {
                 result(FlutterError(code: "INVALID_ARGUMENT", message: "Expected dictionary", details: nil))
             }
+        case "setImageRatio":
+            if let args = call.arguments as? [String: Any] {
+                setImageRatio(args: args, result: result)
+            } else {
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Expected dictionary", details: nil))
+            }
+        case "clearVideo":
+            clearVideo(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "queryMediaFiles":
+            queryMediaFiles(result: result)
+        case "migrateMediaToAppRoot":
+            migrateMediaToAppRoot(result: result)
+        case "loadMediaThumbnail":
+            loadMediaThumbnail(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "loadMediaBytes":
+            loadMediaBytes(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "playMediaVideo":
+            playMediaVideo(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "saveMediaToAlbum":
+            saveMediaToAlbum(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "deleteMediaFiles":
+            deleteMediaFiles(args: call.arguments as? [String: Any] ?? [:], result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
     }
 
     private func initSDK(args: [String: Any], result: @escaping FlutterResult) {
+        printSIPFrameworkVersion()
         // 1. 提取 stunConfig
         var stun: STUNConfig? = nil
         if let stunDict = args["stunConfig"] as? [String: Any] {
@@ -240,6 +280,7 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     private func initToken(args: [String: Any], result: @escaping FlutterResult) {
+        printSIPFrameworkVersion()
         // 1. 提取 stunConfig
         var stun: STUNConfig? = nil
         if let stunDict = args["stunConfig"] as? [String: Any] {
@@ -438,12 +479,15 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     /**
-     * 截取对方视频画面并保存为 JPG 到 Documents/Doorbell/<设备名>/。
-     * iOS 无外部存储概念，保存到应用 Documents 目录，
+     * 截取对方视频画面并保存为 JPG 到 relativePath 指定的位置。
+     * relativePath 是相对媒体根目录的完整路径（含文件名），如
+     * Doorbell/<deviceId>/photo/2026/08/10/101530_123.jpg。
+     * iOS 无外部存储概念，保存到应用 Documents 目录下，
      * 宿主开启文件共享后可通过 Finder/iTunes 导出。
      */
     private func saveSnapshotToDocuments(args: [String: Any], result: @escaping FlutterResult) {
-        guard let deviceName = args["deviceName"] as? String, !deviceName.isEmpty else {
+        guard let relativePath = args["relativePath"] as? String,
+              !relativePath.isEmpty else {
             result(nil)
             return
         }
@@ -460,19 +504,16 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
                 result(nil)
                 return
             }
-            let safeName = Self.sanitizeFolderName(deviceName)
-            let fileName = "call_\(Int64(Date().timeIntervalSince1970 * 1000)).jpg"
             let docs = NSSearchPathForDirectoriesInDomains(
                 .documentDirectory, .userDomainMask, true).first ?? ""
-            let dir = (docs as NSString)
-                .appendingPathComponent("Doorbell")
-                .appendingPathComponent(safeName)
+            let fileURL = URL(
+                fileURLWithPath: (docs as NSString).appendingPathComponent(relativePath))
             do {
                 try FileManager.default.createDirectory(
-                    atPath: dir, withIntermediateDirectories: true, attributes: nil)
-                let path = (dir as NSString).appendingPathComponent(fileName)
-                try jpegData.write(to: URL(fileURLWithPath: path))
-                result(path)
+                    atPath: fileURL.deletingLastPathComponent().path,
+                    withIntermediateDirectories: true, attributes: nil)
+                try jpegData.write(to: fileURL)
+                result(fileURL.path)
             } catch {
                 result(FlutterError(
                     code: "SAVE_FAILED", message: error.localizedDescription, details: nil))
@@ -480,13 +521,32 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private static func sanitizeFolderName(_ name: String) -> String {
-        let invalid = CharacterSet(charactersIn: "/\\:*?\"<>|")
-        let safe = name
-            .components(separatedBy: invalid)
-            .joined(separator: "_")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return safe.isEmpty ? "Device" : safe
+    /**
+     * 开始录制对方视频画面为 MP4，保存到 Documents/<relativePath>。
+     * 与 Android 的 CallMediaRecorder 语义一致：返回文件绝对路径。
+     */
+    private func startVideoRecording(args: [String: Any], result: @escaping FlutterResult) {
+        guard let relativePath = args["relativePath"] as? String,
+              !relativePath.isEmpty else {
+            result(nil)
+            return
+        }
+        guard let view = VideoComponentView.currentInstance?.view() else {
+            result(nil)
+            return
+        }
+        let path = VideoRecorderManager.shared.startRecording(
+            view: view, relativePath: relativePath)
+        result(path)
+    }
+
+    /**
+     * 停止录制，返回录制文件绝对路径；失败或无文件时返回 nil。
+     */
+    private func stopVideoRecording(result: @escaping FlutterResult) {
+        VideoRecorderManager.shared.stopRecording { path in
+            result(path)
+        }
     }
 
     /**
@@ -658,5 +718,227 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         let speaker: Bool = (args["speaker"] as? Bool) ?? true
         PCMPlayer.instance.setSpeaker(enabled: speaker)
         result(nil)
+    }
+
+    private func setImageRatio(args: [String: Any], result: @escaping FlutterResult) {
+        let originalRatio: Bool = (args["originalRatio"] as? Bool) ?? false
+        VideoComponentView.currentInstance?.setImageRatio(originalRatio: originalRatio)
+        result(nil)
+    }
+
+    private func clearVideo(args: [String: Any], result: @escaping FlutterResult) {
+        VideoComponentView.currentInstance?.clearVideo()
+        result(nil)
+    }
+
+    // MARK: - 相册（拍照/录制视频）读取
+
+    /**
+     * 枚举应用 Documents/ParsianTasvir/Doorbell 下的所有拍照 / 录制视频。
+     * 返回 [{relativePath, uri}]，uri 为绝对文件路径，
+     * relativePath 统一为 Doorbell/<deviceKey>/<type>/<yyyy>/<MM>/<dd>/<file>
+     * （剥掉 app 根前缀 ParsianTasvir/，与 Dart 侧解析约定一致）。
+     */
+    private func queryMediaFiles(result: @escaping FlutterResult) {
+        let docs = NSSearchPathForDirectoriesInDomains(
+            .documentDirectory, .userDomainMask, true).first ?? ""
+        let root = (docs as NSString).appendingPathComponent("ParsianTasvir/Doorbell")
+        result(walkMediaDir(root, prefix: "Doorbell"))
+    }
+
+    /**
+     * 一次性迁移旧媒体目录（Doorbell / lastframe / callrecord）到 app 公共根目录
+     * ParsianTasvir/ 下，方便统一清理。幂等：根目录已存在则跳过。
+     */
+    private func migrateMediaToAppRoot(result: @escaping FlutterResult) {
+        let docs = NSSearchPathForDirectoriesInDomains(
+            .documentDirectory, .userDomainMask, true).first ?? ""
+        let appRoot = (docs as NSString).appendingPathComponent("ParsianTasvir")
+        let fm = FileManager.default
+        guard !fm.fileExists(atPath: appRoot) else {
+            result(true)
+            return
+        }
+        try? fm.createDirectory(atPath: appRoot, withIntermediateDirectories: true)
+        for sub in ["Doorbell", "lastframe", "callrecord"] {
+            let src = (docs as NSString).appendingPathComponent(sub)
+            if fm.fileExists(atPath: src) {
+                try? fm.moveItem(
+                    atPath: src,
+                    toPath: (appRoot as NSString).appendingPathComponent(sub))
+            }
+        }
+        result(true)
+    }
+
+    private func walkMediaDir(_ dir: String, prefix: String) -> [[String: String]] {
+        var out: [[String: String]] = []
+        let fm = FileManager.default
+        guard let entries = try? fm.contentsOfDirectory(atPath: dir) else { return out }
+        for entry in entries {
+            let path = (dir as NSString).appendingPathComponent(entry)
+            let relative = prefix + "/" + entry
+            var isDir: ObjCBool = false
+            if fm.fileExists(atPath: path, isDirectory: &isDir) {
+                if isDir.boolValue {
+                    out.append(contentsOf: walkMediaDir(path, prefix: relative))
+                } else if isMediaFile(entry) {
+                    out.append(["relativePath": relative, "uri": path])
+                }
+            }
+        }
+        return out
+    }
+
+    private func isMediaFile(_ name: String) -> Bool {
+        let n = name.lowercased()
+        return n.hasSuffix(".jpg") || n.hasSuffix(".jpeg")
+            || n.hasSuffix(".png") || n.hasSuffix(".mp4")
+    }
+
+    private func loadMediaThumbnail(args: [String: Any], result: @escaping FlutterResult) {
+        guard let uri = args["uri"] as? String, !uri.isEmpty else {
+            result(nil)
+            return
+        }
+        let maxSize = args["maxSize"] as? Int ?? 256
+        DispatchQueue.global(qos: .userInitiated).async {
+            let data = self.mediaThumbnailData(for: uri, maxSize: maxSize)
+            DispatchQueue.main.async {
+                if let data = data {
+                    result(FlutterStandardTypedData(bytes: data))
+                } else {
+                    result(nil)
+                }
+            }
+        }
+    }
+
+    private func mediaThumbnailData(for uri: String, maxSize: Int) -> Data? {
+        let url = URL(fileURLWithPath: uri)
+        if uri.lowercased().hasSuffix(".mp4") {
+            let asset = AVAsset(url: url)
+            let generator = AVAssetImageGenerator(asset: asset)
+            generator.appliesPreferredTrackTransform = true
+            generator.maximumSize = CGSize(width: maxSize * 2, height: maxSize * 2)
+            let time = CMTime(value: 0, timescale: 600)
+            if let cgImage = try? generator.copyCGImage(at: time, actualTime: nil) {
+                return UIImage(cgImage: cgImage).jpegData(compressionQuality: 0.8)
+            }
+            return nil
+        }
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxSize * 2
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(
+            source, 0, options as CFDictionary) else { return nil }
+        return UIImage(cgImage: cgImage).jpegData(compressionQuality: 0.8)
+    }
+
+    private func loadMediaBytes(args: [String: Any], result: @escaping FlutterResult) {
+        guard let uri = args["uri"] as? String, !uri.isEmpty else {
+            result(nil)
+            return
+        }
+        DispatchQueue.global(qos: .userInitiated).async {
+            let data = try? Data(contentsOf: URL(fileURLWithPath: uri))
+            DispatchQueue.main.async {
+                if let data = data {
+                    result(FlutterStandardTypedData(bytes: data))
+                } else {
+                    result(nil)
+                }
+            }
+        }
+    }
+
+    private func playMediaVideo(args: [String: Any], result: @escaping FlutterResult) {
+        guard let uri = args["uri"] as? String, !uri.isEmpty else {
+            result(nil)
+            return
+        }
+        DispatchQueue.main.async {
+            let player = AVPlayer(url: URL(fileURLWithPath: uri))
+            let controller = AVPlayerViewController()
+            controller.player = player
+            guard let top = self.topViewController() else {
+                result(nil)
+                return
+            }
+            top.present(controller, animated: true) {
+                player.play()
+            }
+            result(nil)
+        }
+    }
+
+    private func saveMediaToAlbum(args: [String: Any], result: @escaping FlutterResult) {
+        guard let uri = args["uri"] as? String, !uri.isEmpty else {
+            result(false)
+            return
+        }
+        let fileURL = URL(fileURLWithPath: uri)
+        let isVideo = uri.lowercased().hasSuffix(".mp4")
+        PHPhotoLibrary.requestAuthorization { status in
+            let allowed: Bool
+            if #available(iOS 14, *) {
+                allowed = status == .authorized || status == .limited
+            } else {
+                allowed = status == .authorized
+            }
+            guard allowed else {
+                DispatchQueue.main.async { result(false) }
+                return
+            }
+            PHPhotoLibrary.shared().performChanges {
+                if isVideo {
+                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: fileURL)
+                } else {
+                    PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: fileURL)
+                }
+            } completionHandler: { success, _ in
+                DispatchQueue.main.async { result(success) }
+            }
+        }
+    }
+
+    private func deleteMediaFiles(args: [String: Any], result: @escaping FlutterResult) {
+        let uris = args["uris"] as? [String] ?? []
+        guard !uris.isEmpty else {
+            result(false)
+            return
+        }
+        DispatchQueue.global().async {
+            var ok = true
+            for u in uris {
+                let url = URL(fileURLWithPath: u)
+                if FileManager.default.fileExists(atPath: url.path) {
+                    do {
+                        try FileManager.default.removeItem(at: url)
+                    } catch {
+                        ok = false
+                    }
+                }
+            }
+            DispatchQueue.main.async { result(ok) }
+        }
+    }
+
+    private func topViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+            ?? scenes.compactMap { $0 as? UIWindowScene }.first
+        let window = windowScene?.windows.first { $0.isKeyWindow }
+            ?? windowScene?.windows.first
+        guard let root = window?.rootViewController else { return nil }
+        var top = root
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        return top
     }
 }

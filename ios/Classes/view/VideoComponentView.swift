@@ -8,6 +8,8 @@ class VideoComponentView: NSObject, FlutterPlatformView {
     private var _view: UIView
     var videoContainerView: UIView!
     private var videoLayer: AVSampleBufferDisplayLayer?
+    // 图像比例：true=1:1 按实际比例(留黑边)，false=铺满(拉伸变形)。默认 1:1。
+    private var isOriginalRatio = true
 
     // flutter侧传入参数
     private var arguments: Any?
@@ -81,9 +83,27 @@ class VideoComponentView: NSObject, FlutterPlatformView {
         videoLayer = layer
         DispatchQueue.main.async {
             layer.frame = self.videoContainerView.bounds
-            layer.videoGravity = .resizeAspect
             self.videoContainerView.layer.addSublayer(layer)
+            self.applyVideoGravity()
         }
+    }
+
+    func setImageRatio(originalRatio: Bool) {
+        isOriginalRatio = originalRatio
+        DispatchQueue.main.async {
+            self.applyVideoGravity()
+        }
+    }
+
+    /// 清空视频表面（只留纯黑底色），用于挂断/切换通道时清掉上一通道的残留画面。
+    func clearVideo() {
+        DispatchQueue.main.async {
+            self.videoLayer?.flushAndRemoveImage()
+        }
+    }
+
+    private func applyVideoGravity() {
+        videoLayer?.videoGravity = isOriginalRatio ? .resizeAspect : .resize
     }
 
     deinit {

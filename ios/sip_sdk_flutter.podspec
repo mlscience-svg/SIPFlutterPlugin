@@ -16,8 +16,10 @@ A new Flutter plugin project.
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.platform = :ios, '12.0'
-  
-  s.dependency 'SIPFramework'
+
+  # SIPFramework 为本地 xcframework（设备端 arm64/arm64e），直接随插件打包，
+  # 不再依赖外部 specs 仓库解析 SIPFramework pod。
+  s.vendored_frameworks = 'Frameworks/SIPFramework.xcframework'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

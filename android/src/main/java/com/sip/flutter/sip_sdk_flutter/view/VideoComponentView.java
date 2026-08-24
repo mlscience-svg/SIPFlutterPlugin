@@ -31,9 +31,6 @@ public class VideoComponentView implements PlatformView, H264CodecImpl.DecodeCal
     private final YUVRenderer yuvRenderer;
 
     VideoComponentView(final Context context, Map<String, Object> params) {
-        H264CodecImpl.addListener(this);
-        currentInstance = this;
-
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.view = inflater.inflate(R.layout.view_video_component, null);
 
@@ -41,6 +38,11 @@ public class VideoComponentView implements PlatformView, H264CodecImpl.DecodeCal
         glSurfaceView.setEGLContextClientVersion(2);
         yuvRenderer = new YUVRenderer(glSurfaceView);
         glSurfaceView.setRenderer(yuvRenderer);
+
+        // 先完成所有字段初始化再注册解码回调，避免解码线程在构造期间
+        // 回调到尚未赋值的 yuvRenderer（全屏切换会反复重建本视图）。
+        currentInstance = this;
+        H264CodecImpl.addListener(this);
     }
 
     @Nullable
@@ -90,6 +92,21 @@ public class VideoComponentView implements PlatformView, H264CodecImpl.DecodeCal
     }
 
     /**
+     * 切换远端视频显示比例。originalRatio=true → 1:1 按实际比例（留黑边）；
+     * originalRatio=false → 铺满（拉伸铺满，变形）。默认 1:1。
+     */
+    public void setImageRatio(boolean originalRatio) {
+        yuvRenderer.setFillScreen(!originalRatio);
+    }
+
+    /**
+     * 清空视频表面（只留深灰清屏色），用于挂断/切换通道时清掉上一通道的残留画面。
+     */
+    public void clearVideo() {
+        yuvRenderer.clearFrame();
+    }
+
+    /**
      * I420 (YUV420P) → ARGB_8888。转换系数与 YUVRenderer 的着色器一致
      * （全范围 BT.601）：R=Y+1.402V, G=Y-0.3441U-0.7141V, B=Y+1.772U。
      */
@@ -126,6 +143,10 @@ public class VideoComponentView implements PlatformView, H264CodecImpl.DecodeCal
         if (width == 0 || height == 0) {
             return;
         }
-        yuvRenderer.update(outData, outDataSize, width, height);
+        YUVRenderer renderer = yuvRenderer;
+        if (renderer == null) {
+            return;
+        }
+        renderer.update(outData, outDataSize, width, height);
     }
 }

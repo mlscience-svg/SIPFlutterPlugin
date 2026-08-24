@@ -146,23 +146,78 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   }
 
   @override
-  Future<String?> captureSnapshotToDocuments(String deviceName) async {
+  Future<String?> captureSnapshotToPath(String relativePath) async {
     return await methodChannel.invokeMethod<String>(
       'saveSnapshotToDocuments',
-      {'deviceName': deviceName},
+      {'relativePath': relativePath},
     );
   }
 
   @override
-  Future<String?> startVideoRecording(String deviceName) async {
+  Future<String?> startVideoRecording(String relativePath) async {
     return await methodChannel.invokeMethod<String>('startVideoRecording', {
-      'deviceName': deviceName,
+      'relativePath': relativePath,
     });
   }
 
   @override
   Future<String?> stopVideoRecording() async {
     return await methodChannel.invokeMethod<String>('stopVideoRecording');
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>?> queryMediaFiles() async {
+    final raw = await methodChannel.invokeMethod<List<dynamic>>(
+      'queryMediaFiles',
+    );
+    if (raw == null) return null;
+    return raw
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+  }
+
+  @override
+  Future<void> migrateMediaToAppRoot() async {
+    await methodChannel.invokeMethod<void>('migrateMediaToAppRoot');
+  }
+
+  @override
+  Future<Uint8List?> loadMediaThumbnail(String uri, int maxSize) async {
+    return await methodChannel.invokeMethod<Uint8List>('loadMediaThumbnail', {
+      'uri': uri,
+      'maxSize': maxSize,
+    });
+  }
+
+  @override
+  Future<Uint8List?> loadMediaBytes(String uri) async {
+    return await methodChannel.invokeMethod<Uint8List>('loadMediaBytes', {
+      'uri': uri,
+    });
+  }
+
+  @override
+  Future<void> playMediaVideo(String uri) async {
+    return await methodChannel.invokeMethod<void>('playMediaVideo', {
+      'uri': uri,
+    });
+  }
+
+  @override
+  Future<bool> saveMediaToAlbum(String uri, {bool isVideo = false}) async {
+    return (await methodChannel.invokeMethod<bool>('saveMediaToAlbum', {
+      'uri': uri,
+      'isVideo': isVideo,
+    })) ??
+        false;
+  }
+
+  @override
+  Future<bool> deleteMediaFiles(List<String> uris) async {
+    return (await methodChannel.invokeMethod<bool>('deleteMediaFiles', {
+      'uris': uris,
+    })) ??
+        false;
   }
 
   @override
@@ -285,5 +340,17 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
     return await methodChannel.invokeMethod<void>('setSpeaker', {
       'speaker': speaker,
     });
+  }
+
+  @override
+  Future<void> setImageRatio(bool originalRatio) async {
+    return await methodChannel.invokeMethod<void>('setImageRatio', {
+      'originalRatio': originalRatio,
+    });
+  }
+
+  @override
+  Future<void> clearVideo() async {
+    return await methodChannel.invokeMethod<void>('clearVideo');
   }
 }

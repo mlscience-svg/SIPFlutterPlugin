@@ -246,6 +246,8 @@ extern "C"
         sip_sdk_stun_config stun_config;         // stun 服务器
         char custom_session_name[256];           // custom session name
         int local_call_update_time;              // 本地呼叫更新时间（IP 呼叫不会自动更新会话，配置大于0表示间隔多少秒发送更新消息）
+        int tcp_keep_alive_interval;             // 全局 TCP transport keepalive 间隔，单位秒，<0 使用 PJSIP 默认值，0=禁用
+        sdk_bool_t tcp_disconnect_on_silence;    // 全局 TCP keepalive 静默自动断开，仅在底层 PJSIP 支持该配置时生效
     } sip_sdk_common_config;
 
     extern sip_sdk_common_config sip_sdk_config;
