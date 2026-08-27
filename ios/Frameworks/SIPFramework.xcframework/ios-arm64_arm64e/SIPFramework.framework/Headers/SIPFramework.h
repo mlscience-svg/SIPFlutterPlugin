@@ -18,3 +18,4 @@ FOUNDATION_EXPORT const unsigned char SIPFrameworkVersionString[];
 #include <SIPFramework/sip_sdk.h>
 #include <SIPFramework/sip_sdk_aec.h>
 #include <SIPFramework/sip_sdk_media.h>
+#include <SIPFramework/sip_sdk_ft.h>

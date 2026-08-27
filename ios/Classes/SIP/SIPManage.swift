@@ -235,4 +235,101 @@ public class SIPManage {
             SipSdkFlutterPlugin.channel?.invokeMethod("onActivityCheck", arguments: [])
         }
     }
+
+    // MARK: - 文件传输（FT）回调
+
+    static let onFTOffer: OnFTOffer = { ptr in
+        guard let ptr = ptr else { return }
+        let param = SIPFTOfferParam(cParam: ptr.pointee)
+        let payload: [String: Any] = [
+            "ftId": param.ftId,
+            "accUuid": param.accUuid,
+            "username": param.username,
+            "remoteIp": param.remoteIp,
+            "file": [
+                "name": param.file.name,
+                "size": param.file.size,
+                "extra": param.file.extra,
+            ],
+        ]
+        DispatchQueue.main.async {
+            SipSdkFlutterPlugin.channel?.invokeMethod("onFTOffer", arguments: payload)
+        }
+    }
+
+    static let onFTRequest: OnFTRequest = { ptr in
+        guard let ptr = ptr else { return }
+        let info = SIPFTRequestInfo(cParam: ptr.pointee)
+        let payload: [String: Any] = [
+            "reqId": info.reqId,
+            "accUuid": info.accUuid,
+            "username": info.username,
+            "remoteIp": info.remoteIp,
+            "file": [
+                "name": info.file.name,
+                "size": info.file.size,
+                "extra": info.file.extra,
+            ],
+        ]
+        DispatchQueue.main.async {
+            SipSdkFlutterPlugin.channel?.invokeMethod("onFTRequest", arguments: payload)
+        }
+    }
+
+    static let onFTRequestResult: OnFTRequestResult = { reqId, ok, reason in
+        let reasonText = reason.map { String(cString: $0) } ?? ""
+        let payload: [String: Any] = [
+            "reqId": reqId,
+            "ok": ok != 0,
+            "reason": reasonText,
+        ]
+        DispatchQueue.main.async {
+            SipSdkFlutterPlugin.channel?.invokeMethod("onFTRequestResult", arguments: payload)
+        }
+    }
+
+    static let onFTProgress: OnFTProgress = { ptr in
+        guard let ptr = ptr else { return }
+        let progress = SIPFTProgress(cParam: ptr.pointee)
+        let payload: [String: Any] = [
+            "ftId": progress.ftId,
+            "state": progress.state,
+            "bytesTotal": progress.bytesTotal,
+            "bytesDone": progress.bytesDone,
+            "percent": progress.percent,
+            "activeSessions": progress.activeSessions,
+        ]
+        DispatchQueue.main.async {
+            SipSdkFlutterPlugin.channel?.invokeMethod("onFTProgress", arguments: payload)
+        }
+    }
+
+    static let onFTComplete: OnFTComplete = { ptr in
+        guard let ptr = ptr else { return }
+        let param = SIPFTCompleteParam(cParam: ptr.pointee)
+        let payload: [String: Any] = [
+            "ftId": param.ftId,
+            "role": param.role,
+            "error": param.error,
+            "bytesTransferred": param.bytesTransferred,
+            "elapsedMs": param.elapsedMs,
+            "fileName": param.fileName,
+            "savePath": param.savePath,
+        ]
+        DispatchQueue.main.async {
+            SipSdkFlutterPlugin.channel?.invokeMethod("onFTComplete", arguments: payload)
+        }
+    }
+
+    /// 配置 FT（构建 SIPFTCallbacks 并传给 SIPHandle.setFTConfig）
+    static func setupFTConfig(config: SIPFTConfig) -> Int32 {
+        let callbacks = SIPFTCallbacks(
+            onFTOffer: onFTOffer,
+            onFTRequest: onFTRequest,
+            onFTRequestResult: onFTRequestResult,
+            onFTProgress: onFTProgress,
+            onFTComplete: onFTComplete
+        )
+        return SIPHandle.setFTConfig(config: config, callbacks: callbacks)
+    }
 }

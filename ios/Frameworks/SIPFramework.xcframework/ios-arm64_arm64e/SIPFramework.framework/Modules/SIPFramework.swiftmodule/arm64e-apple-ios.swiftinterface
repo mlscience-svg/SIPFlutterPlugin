@@ -66,6 +66,11 @@ public typealias OnMessageState = @convention(c) (Swift.Int32, SIPFramework.sip_
 public typealias OnCallState = @convention(c) (SIPFramework.sip_sdk_call_status_param) -> Swift.Void
 public typealias ExpireWarningCallback = @convention(c) (_DarwinFoundation2.time_t, _DarwinFoundation2.time_t) -> Swift.Void
 public typealias ActivityCheckCallback = @convention(c) () -> Swift.Void
+public typealias OnFTOffer = @convention(c) (Swift.UnsafePointer<SIPFramework.sip_sdk_ft_offer_param>?) -> Swift.Void
+public typealias OnFTRequest = @convention(c) (Swift.UnsafePointer<SIPFramework.sip_sdk_ft_request_info>?) -> Swift.Void
+public typealias OnFTRequestResult = @convention(c) (Swift.UInt64, Swift.Int32, Swift.UnsafePointer<Swift.CChar>?) -> Swift.Void
+public typealias OnFTProgress = @convention(c) (Swift.UnsafePointer<SIPFramework.sip_sdk_ft_progress>?) -> Swift.Void
+public typealias OnFTComplete = @convention(c) (Swift.UnsafePointer<SIPFramework.sip_sdk_ft_complete_param>?) -> Swift.Void
 public enum SIPDTMFInfoType : Swift.Int32 {
   case rfc2833
   case info
@@ -99,9 +104,10 @@ public struct SIPSDKCallbacks {
   public init(onLogCallback: SIPFramework.OnLogCallback? = nil, onInitCompleted: SIPFramework.OnInitCompleted? = nil, onStopCompleted: SIPFramework.OnStopCompleted? = nil, onRegistrarState: SIPFramework.OnRegistrarState? = nil, onIncomingCall: SIPFramework.OnIncomingCall? = nil, onFindIncoming: SIPFramework.OnFindIncoming? = nil, onDtmfInfo: SIPFramework.OnDtmfInfo? = nil, onMessage: SIPFramework.OnMessage? = nil, onMessageState: SIPFramework.OnMessageState? = nil, onCallState: SIPFramework.OnCallState? = nil, onExpireWarning: SIPFramework.ExpireWarningCallback? = nil, onActivityCheck: SIPFramework.ActivityCheckCallback? = nil)
 }
 public struct STUNConfig {
+  public var enable: Swift.Int32
   public var servers: [Swift.String]
   public var enableIPv6: Swift.Int32
-  public init(servers: [Swift.String], enableIPv6: Swift.Bool)
+  public init(servers: [Swift.String], enableIPv6: Swift.Bool, enable: Swift.Bool = true)
 }
 public struct SIPSDKConfig {
   public var logLevel: Swift.Int32
@@ -172,6 +178,74 @@ public struct MessageParam {
   public var remoteIp: Swift.String?
   public init(type: Swift.Int32 = 2, content: Swift.String = "", username: Swift.String? = nil, remoteIp: Swift.String? = nil)
 }
+public struct SIPFTCallbacks {
+  public init(onFTOffer: SIPFramework.OnFTOffer? = nil, onFTRequest: SIPFramework.OnFTRequest? = nil, onFTRequestResult: SIPFramework.OnFTRequestResult? = nil, onFTProgress: SIPFramework.OnFTProgress? = nil, onFTComplete: SIPFramework.OnFTComplete? = nil)
+}
+public struct SIPFTFileMeta {
+  public let name: Swift.String
+  public let size: Swift.UInt64
+  public let extra: Swift.String
+  public init(cMeta: SIPFramework.sip_sdk_ft_file_meta)
+}
+public struct SIPFTOfferParam {
+  public let ftId: Swift.UInt64
+  public let accUuid: Swift.UInt64
+  public let username: Swift.String
+  public let remoteIp: Swift.String
+  public let file: SIPFramework.SIPFTFileMeta
+  public init(cParam: SIPFramework.sip_sdk_ft_offer_param)
+}
+public struct SIPFTRequestInfo {
+  public let reqId: Swift.UInt64
+  public let accUuid: Swift.UInt64
+  public let username: Swift.String
+  public let remoteIp: Swift.String
+  public let file: SIPFramework.SIPFTFileMeta
+  public init(cParam: SIPFramework.sip_sdk_ft_request_info)
+}
+public struct SIPFTProgress {
+  public let ftId: Swift.UInt64
+  public let state: Swift.Int32
+  public let bytesTotal: Swift.UInt64
+  public let bytesDone: Swift.UInt64
+  public let percent: Swift.Int32
+  public let activeSessions: Swift.UInt32
+  public init(cParam: SIPFramework.sip_sdk_ft_progress)
+}
+public struct SIPFTCompleteParam {
+  public let ftId: Swift.UInt64
+  public let role: Swift.Int32
+  public let error: Swift.Int32
+  public let bytesTransferred: Swift.UInt64
+  public let elapsedMs: Swift.UInt32
+  public let fileName: Swift.String
+  public let savePath: Swift.String
+  public init(cParam: SIPFramework.sip_sdk_ft_complete_param)
+}
+public struct SIPFTConfig {
+  public var enable: Swift.Int32
+  public var maxSessions: Swift.UInt32
+  public var windowSize: Swift.UInt32
+  public var chunkSize: Swift.UInt32
+  public var initialRtoMs: Swift.UInt32
+  public var rtoMinMs: Swift.UInt32
+  public var maxRetransmit: Swift.UInt32
+  public var sessionTimeoutMs: Swift.UInt32
+  public var answerTimeoutMs: Swift.UInt32
+  public var connectTimeoutMs: Swift.UInt32
+  public var inactiveTimeoutMs: Swift.UInt32
+  public var burstMax: Swift.UInt32
+  public var sendIntervalMs: Swift.UInt32
+  public var kcpSndwnd: Swift.UInt32
+  public var kcpRcvwnd: Swift.UInt32
+  public var kcpMaxWaitsnd: Swift.UInt32
+  public var kcpDisableCc: Swift.Int32
+  public var stun: SIPFramework.STUNConfig?
+  public var turn: SIPFramework.TURNConfig?
+  public var enableIpv6: Swift.Int32
+  public var defaultSaveDir: Swift.String?
+  public init(enable: Swift.Bool = false, maxSessions: Swift.UInt32 = 0, windowSize: Swift.UInt32 = 0, chunkSize: Swift.UInt32 = 0, initialRtoMs: Swift.UInt32 = 0, rtoMinMs: Swift.UInt32 = 0, maxRetransmit: Swift.UInt32 = 0, sessionTimeoutMs: Swift.UInt32 = 0, answerTimeoutMs: Swift.UInt32 = 0, connectTimeoutMs: Swift.UInt32 = 0, inactiveTimeoutMs: Swift.UInt32 = 0, burstMax: Swift.UInt32 = 0, sendIntervalMs: Swift.UInt32 = 0, kcpSndwnd: Swift.UInt32 = 0, kcpRcvwnd: Swift.UInt32 = 0, kcpMaxWaitsnd: Swift.UInt32 = 0, kcpDisableCc: Swift.Bool = false, stun: SIPFramework.STUNConfig? = nil, turn: SIPFramework.TURNConfig? = nil, enableIpv6: Swift.Bool = false, defaultSaveDir: Swift.String? = nil)
+}
 @_hasMissingDesignatedInitializers public class SIPHandle {
   public static func initSDK(baseUrl: Swift.String, clientId: Swift.String, clientSecret: Swift.String, config: SIPFramework.SIPSDKConfig, mediaConfig: SIPFramework.SIPSDKMediaConfig)
   public static func initToken(token: Swift.String, clientId: Swift.String, clientSecret: Swift.String, config: SIPFramework.SIPSDKConfig, mediaConfig: SIPFramework.SIPSDKMediaConfig)
@@ -188,6 +262,14 @@ public struct MessageParam {
   public static func dump()
   public static func removeLicense()
   public static func handleIpChange(restart: Swift.Bool, restartDelay: Swift.UInt32)
+  public static func setFTConfig(config: SIPFramework.SIPFTConfig, callbacks: SIPFramework.SIPFTCallbacks) -> Swift.Int32
+  public static func sendFile(accUuid: Swift.UInt64, username: Swift.String?, remoteIp: Swift.String?, filePath: Swift.String, extra: Swift.String?) -> (code: Swift.Int32, ftId: Swift.UInt64)
+  public static func requestFile(accUuid: Swift.UInt64, username: Swift.String?, remoteIp: Swift.String?, fileName: Swift.String, extra: Swift.String?) -> (code: Swift.Int32, reqId: Swift.UInt64)
+  public static func respondRequest(reqId: Swift.UInt64, accept: Swift.Bool, filePath: Swift.String?) -> Swift.Int32
+  public static func acceptFile(ftId: Swift.UInt64, savePath: Swift.String?) -> Swift.Int32
+  public static func rejectFile(ftId: Swift.UInt64, reason: Swift.String?) -> Swift.Int32
+  public static func cancelFile(ftId: Swift.UInt64) -> Swift.Int32
+  public static func getFileState(ftId: Swift.UInt64) -> Swift.Int32
   @objc deinit
 }
 public struct VideoMediaConfig {

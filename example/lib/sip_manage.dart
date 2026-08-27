@@ -5,6 +5,14 @@ import 'package:sip_sdk_flutter/entitys/sip_sdk_camera_config.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_config.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_dtmf_info.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_find_incoming_param.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_complete_param.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_config.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_offer_param.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_param.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_progress.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_request_info.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_request_param.dart';
+import 'package:sip_sdk_flutter/entitys/sip_sdk_ft_result.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_local_config.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_media_config.dart';
 import 'package:sip_sdk_flutter/entitys/sip_sdk_media_h264_fmtp.dart';
@@ -23,16 +31,34 @@ import 'main.dart';
 typedef OnCallState = void Function(SIPSDKCallStatusParam param);
 typedef OnRegistrarState = void Function(int state);
 typedef OnCameraStateChange = void Function(bool state);
+typedef OnFTOffer = void Function(SIPSDKFTOfferParam param);
+typedef OnFTRequest = void Function(SIPSDKFTRequestInfo info);
+typedef OnFTRequestResult = void Function(int reqId, bool ok, String reason);
+typedef OnFTProgress = void Function(SIPSDKFTProgress progress);
+typedef OnFTComplete = void Function(SIPSDKFTCompleteParam param);
+typedef OnMessageState = void Function(int state, SIPSDKMessage message);
 
 class SIPListener {
   final OnCallState? onCallState;
   final OnRegistrarState? onRegistrarState;
   final OnCameraStateChange? onCameraStateChange;
+  final OnFTOffer? onFTOffer;
+  final OnFTRequest? onFTRequest;
+  final OnFTRequestResult? onFTRequestResult;
+  final OnFTProgress? onFTProgress;
+  final OnFTComplete? onFTComplete;
+  final OnMessageState? onMessageState;
 
   const SIPListener({
     this.onCallState,
     this.onRegistrarState,
     this.onCameraStateChange,
+    this.onFTOffer,
+    this.onFTRequest,
+    this.onFTRequestResult,
+    this.onFTProgress,
+    this.onFTComplete,
+    this.onMessageState,
   });
 }
 
@@ -60,8 +86,39 @@ class SIPManage implements SIPSDKCallbacks {
     _sipSdkFlutterPlugin = SipSdkFlutter();
     //设置回调
     _sipSdkFlutterPlugin.setupCallbacks(_instance);
-    //初始化SDK
-    initSDK();
+    // 文件传输需在 init 之前启用（enable 为 true 时 SDK init 完成会自动初始化 FT 模块）
+    _enableFTThenInit();
+  }
+
+  // 启用 FT 模块并复用已保存的 STUN/TURN 配置（FT 配置自包含，不继承账号配置）
+  static Future<void> _enableFTThenInit() async {
+    Map<String, dynamic>? sconfig =
+        await ConfigStorage.load(ConfigStorage.stun_config);
+    STUNConfig? stun;
+    if (sconfig != null && (sconfig["enable"] as bool)) {
+      stun = STUNConfig(
+        servers: [sconfig["server"] as String],
+        enableIPv6: sconfig["enableIPv6"] as bool,
+      );
+    }
+    Map<String, dynamic>? tconfig =
+        await ConfigStorage.load(ConfigStorage.turn_config);
+    SIPSDKTURNConfig? turn;
+    if (tconfig != null && (tconfig["enable"] as bool)) {
+      turn = SIPSDKTURNConfig(
+        enable: true,
+        server: tconfig["server"] as String,
+        realm: tconfig["realm"] as String,
+        username: tconfig["username"] as String,
+        password: tconfig["password"] as String,
+      );
+    }
+    await _sipSdkFlutterPlugin.setFTConfig(SIPSDKFTConfig(
+      enable: true,
+      stun: stun,
+      turn: turn,
+    ));
+    await initSDK();
   }
 
   void addListener(SIPListener listener) {
@@ -75,7 +132,7 @@ class SIPManage implements SIPSDKCallbacks {
   }
 
   // 你可以继续在这里写你自己的方法：
-  static void initSDK() async {
+  static Future<void> initSDK() async {
     Map<String, dynamic>? sconfig =
         await ConfigStorage.load(ConfigStorage.stun_config);
     STUNConfig? stunConfig;
@@ -270,6 +327,40 @@ class SIPManage implements SIPSDKCallbacks {
     _sipSdkFlutterPlugin.dump();
   }
 
+  // ---- 文件传输（FT） ----
+
+  Future<int> setFTConfig(SIPSDKFTConfig config) {
+    return _sipSdkFlutterPlugin.setFTConfig(config);
+  }
+
+  Future<SIPSDKFTResult> sendFile(SIPSDKFTParam param) {
+    return _sipSdkFlutterPlugin.sendFile(param);
+  }
+
+  Future<SIPSDKFTResult> requestFile(SIPSDKFTRequestParam param) {
+    return _sipSdkFlutterPlugin.requestFile(param);
+  }
+
+  Future<int> respondRequest(int reqId, bool accept, String filePath) {
+    return _sipSdkFlutterPlugin.respondRequest(reqId, accept, filePath);
+  }
+
+  Future<int> acceptFile(int ftId, String savePath) {
+    return _sipSdkFlutterPlugin.acceptFile(ftId, savePath);
+  }
+
+  Future<int> rejectFile(int ftId, String reason) {
+    return _sipSdkFlutterPlugin.rejectFile(ftId, reason);
+  }
+
+  Future<int> cancelFile(int ftId) {
+    return _sipSdkFlutterPlugin.cancelFile(ftId);
+  }
+
+  Future<int> getFileState(int ftId) {
+    return _sipSdkFlutterPlugin.getFileState(ftId);
+  }
+
   @override
   void onInitCompleted(int state, String message) {
     debugPrint("onInitCompleted: $state    $message");
@@ -308,6 +399,9 @@ class SIPManage implements SIPSDKCallbacks {
   @override
   void onMessageState(int state, SIPSDKMessage message) {
     debugPrint("onMessages: $state:${message.toString()}");
+    for (final listener in List<SIPListener>.from(_listeners)) {
+      listener.onMessageState?.call(state, message);
+    }
   }
 
   @override
@@ -355,4 +449,46 @@ class SIPManage implements SIPSDKCallbacks {
 
   @override
   void onActivityCheck() {}
+
+  // ---- 文件传输（FT） ----
+
+  @override
+  void onFTOffer(SIPSDKFTOfferParam param) {
+    debugPrint("onFTOffer: ${param.toString()}");
+    for (final listener in List<SIPListener>.from(_listeners)) {
+      listener.onFTOffer?.call(param);
+    }
+  }
+
+  @override
+  void onFTRequest(SIPSDKFTRequestInfo info) {
+    debugPrint("onFTRequest: ${info.toString()}");
+    for (final listener in List<SIPListener>.from(_listeners)) {
+      listener.onFTRequest?.call(info);
+    }
+  }
+
+  @override
+  void onFTRequestResult(int reqId, bool ok, String reason) {
+    debugPrint("onFTRequestResult: reqId=$reqId ok=$ok reason=$reason");
+    for (final listener in List<SIPListener>.from(_listeners)) {
+      listener.onFTRequestResult?.call(reqId, ok, reason);
+    }
+  }
+
+  @override
+  void onFTProgress(SIPSDKFTProgress progress) {
+    debugPrint("onFTProgress: ${progress.toString()}");
+    for (final listener in List<SIPListener>.from(_listeners)) {
+      listener.onFTProgress?.call(progress);
+    }
+  }
+
+  @override
+  void onFTComplete(SIPSDKFTCompleteParam param) {
+    debugPrint("onFTComplete: ${param.toString()}");
+    for (final listener in List<SIPListener>.from(_listeners)) {
+      listener.onFTComplete?.call(param);
+    }
+  }
 }

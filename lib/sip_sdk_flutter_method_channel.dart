@@ -1,5 +1,4 @@
 import 'dart:ffi';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +12,14 @@ import 'entitys/sip_sdk_camera_config.dart';
 import 'entitys/sip_sdk_config.dart';
 import 'entitys/sip_sdk_dtmf_info.dart';
 import 'entitys/sip_sdk_find_incoming_param.dart';
+import 'entitys/sip_sdk_ft_complete_param.dart';
+import 'entitys/sip_sdk_ft_config.dart';
+import 'entitys/sip_sdk_ft_offer_param.dart';
+import 'entitys/sip_sdk_ft_param.dart';
+import 'entitys/sip_sdk_ft_progress.dart';
+import 'entitys/sip_sdk_ft_request_info.dart';
+import 'entitys/sip_sdk_ft_request_param.dart';
+import 'entitys/sip_sdk_ft_result.dart';
 import 'entitys/sip_sdk_registrar_config.dart';
 import 'sip_sdk_flutter_platform_interface.dart';
 
@@ -94,6 +101,38 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
           break;
         case 'onActivityCheck':
           callbacks.onActivityCheck();
+          break;
+        case 'onFTOffer':
+          final param = SIPSDKFTOfferParam.fromMap(
+            Map<String, dynamic>.from(call.arguments),
+          );
+          callbacks.onFTOffer(param);
+          break;
+        case 'onFTRequest':
+          final info = SIPSDKFTRequestInfo.fromMap(
+            Map<String, dynamic>.from(call.arguments),
+          );
+          callbacks.onFTRequest(info);
+          break;
+        case 'onFTRequestResult':
+          final args = call.arguments as Map;
+          callbacks.onFTRequestResult(
+            args['reqId'] ?? 0,
+            args['ok'] ?? false,
+            args['reason'] ?? '',
+          );
+          break;
+        case 'onFTProgress':
+          final progress = SIPSDKFTProgress.fromMap(
+            Map<String, dynamic>.from(call.arguments),
+          );
+          callbacks.onFTProgress(progress);
+          break;
+        case 'onFTComplete':
+          final param = SIPSDKFTCompleteParam.fromMap(
+            Map<String, dynamic>.from(call.arguments),
+          );
+          callbacks.onFTComplete(param);
           break;
         default:
           debugPrint("未知方法: ${call.method}");
@@ -210,6 +249,34 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
       'isVideo': isVideo,
     })) ??
         false;
+  }
+
+  @override
+  Future<String?> extractVideoFrame(
+    String uri,
+    int positionMs,
+    String relativePath,
+  ) async {
+    return await methodChannel.invokeMethod<String>('extractVideoFrame', {
+      'uri': uri,
+      'positionMs': positionMs,
+      'relativePath': relativePath,
+    });
+  }
+
+  @override
+  Future<String?> clipVideo(
+    String uri,
+    int startUs,
+    int endUs,
+    String relativePath,
+  ) async {
+    return await methodChannel.invokeMethod<String>('clipVideo', {
+      'uri': uri,
+      'startUs': startUs,
+      'endUs': endUs,
+      'relativePath': relativePath,
+    });
   }
 
   @override
@@ -352,5 +419,141 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   @override
   Future<void> clearVideo() async {
     return await methodChannel.invokeMethod<void>('clearVideo');
+  }
+
+  @override
+  Future<int> setFTConfig(SIPSDKFTConfig config) async {
+    return await methodChannel.invokeMethod<int>('setFTConfig', config.toJson()) ?? 0;
+  }
+
+  @override
+  Future<SIPSDKFTResult> sendFile(SIPSDKFTParam param) async {
+    final raw = await methodChannel.invokeMethod<Map<dynamic, dynamic>>(
+      'sendFile',
+      param.toJson(),
+    );
+    return SIPSDKFTResult.fromMap(Map<String, dynamic>.from(raw ?? const {}));
+  }
+
+  @override
+  Future<SIPSDKFTResult> requestFile(SIPSDKFTRequestParam param) async {
+    final raw = await methodChannel.invokeMethod<Map<dynamic, dynamic>>(
+      'requestFile',
+      param.toJson(),
+    );
+    return SIPSDKFTResult.fromMap(Map<String, dynamic>.from(raw ?? const {}));
+  }
+
+  @override
+  Future<int> respondRequest(int reqId, bool accept, String filePath) async {
+    return await methodChannel.invokeMethod<int>('respondRequest', {
+      'reqId': reqId,
+      'accept': accept,
+      'filePath': filePath,
+    }) ?? 0;
+  }
+
+  @override
+  Future<int> acceptFile(int ftId, String savePath) async {
+    return await methodChannel.invokeMethod<int>('acceptFile', {
+      'ftId': ftId,
+      'savePath': savePath,
+    }) ?? 0;
+  }
+
+  @override
+  Future<String?> moveToDocuments(String sourcePath, String relativePath) async {
+    return await methodChannel.invokeMethod<String>('moveToDocuments', {
+      'sourcePath': sourcePath,
+      'relativePath': relativePath,
+    });
+  }
+
+  @override
+  Future<String?> findCallRecordMedia(
+    String deviceKey,
+    String fileName, {
+    String directory = 'callrecord',
+  }) async {
+    return await methodChannel.invokeMethod<String>('findCallRecordMedia', {
+      'deviceKey': deviceKey,
+      'fileName': fileName,
+      'directory': directory,
+    });
+  }
+
+  @override
+  Future<String?> resolveMediaPath(String uri) async {
+    return await methodChannel.invokeMethod<String>('resolveMediaPath', {
+      'uri': uri,
+    });
+  }
+
+  @override
+  Future<int?> createVideoPlayer(String uri) async {
+    return await methodChannel.invokeMethod<int>('createVideoPlayer', {
+      'uri': uri,
+    });
+  }
+
+  @override
+  Future<void> videoPlayerPlay(int textureId) async {
+    await methodChannel.invokeMethod<void>('videoPlayerPlay', {
+      'textureId': textureId,
+    });
+  }
+
+  @override
+  Future<void> videoPlayerPause(int textureId) async {
+    await methodChannel.invokeMethod<void>('videoPlayerPause', {
+      'textureId': textureId,
+    });
+  }
+
+  @override
+  Future<void> videoPlayerSeekTo(int textureId, int ms) async {
+    await methodChannel.invokeMethod<void>('videoPlayerSeekTo', {
+      'textureId': textureId,
+      'ms': ms,
+    });
+  }
+
+  @override
+  Future<Map<String, dynamic>?> videoPlayerState(int textureId) async {
+    final raw = await methodChannel.invokeMethod<Map<dynamic, dynamic>>(
+      'videoPlayerState',
+      {'textureId': textureId},
+    );
+    if (raw == null) return null;
+    return Map<String, dynamic>.from(raw);
+  }
+
+  @override
+  Future<void> disposeVideoPlayer(int textureId) async {
+    await methodChannel.invokeMethod<void>('disposeVideoPlayer', {
+      'textureId': textureId,
+    });
+  }
+
+  @override
+  Future<int> rejectFile(int ftId, String reason) async {
+    return await methodChannel.invokeMethod<int>('rejectFile', {
+      'ftId': ftId,
+      'reason': reason,
+    }) ?? 0;
+  }
+
+  @override
+  Future<int> cancelFile(int ftId) async {
+    return await methodChannel.invokeMethod<int>('cancelFile', {
+      'ftId': ftId,
+    }) ?? 0;
+  }
+
+  @override
+  Future<int> getFileState(int ftId) async {
+    return await methodChannel.invokeMethod<int>('getFileState', {
+      'ftId': ftId,
+    }) ?? 0;
   }
 }

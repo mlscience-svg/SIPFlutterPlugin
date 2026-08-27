@@ -32,8 +32,9 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  
-  pod 'SIPFramework', :path => '../../ios/Frameworks'
+
+  # SIPFramework.xcframework 由 sip_sdk_flutter.podspec 的 vendored_frameworks 引入，
+  # 此处不再重复声明，避免 Pods-Runner 出现重复的 sipframework.xcframework。
   target 'RunnerTests' do
     inherit! :search_paths
   end

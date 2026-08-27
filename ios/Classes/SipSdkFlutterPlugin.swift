@@ -187,6 +187,22 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             saveMediaToAlbum(args: call.arguments as? [String: Any] ?? [:], result: result)
         case "deleteMediaFiles":
             deleteMediaFiles(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "setFTConfig":
+            setFTConfig(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "sendFile":
+            sendFile(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "requestFile":
+            requestFile(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "respondRequest":
+            respondRequest(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "acceptFile":
+            acceptFile(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "rejectFile":
+            rejectFile(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "cancelFile":
+            cancelFile(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "getFileState":
+            getFileState(args: call.arguments as? [String: Any] ?? [:], result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -199,7 +215,8 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         if let stunDict = args["stunConfig"] as? [String: Any] {
             let servers = (stunDict["servers"] as? [String]) ?? []
             let enableIPv6 = (stunDict["enableIPv6"] as? Bool) ?? false
-            stun = STUNConfig(servers: servers, enableIPv6: enableIPv6)
+            let enable = (stunDict["enable"] as? Bool) ?? true
+            stun = STUNConfig(servers: servers, enableIPv6: enableIPv6, enable: enable)
         }
 
         // 2. 提取 mediaConfig（可选，如果你有用到）
@@ -286,7 +303,8 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         if let stunDict = args["stunConfig"] as? [String: Any] {
             let servers = (stunDict["servers"] as? [String]) ?? []
             let enableIPv6 = (stunDict["enableIPv6"] as? Bool) ?? false
-            stun = STUNConfig(servers: servers, enableIPv6: enableIPv6)
+            let enable = (stunDict["enable"] as? Bool) ?? true
+            stun = STUNConfig(servers: servers, enableIPv6: enableIPv6, enable: enable)
         }
 
         // 2. 提取 mediaConfig（可选，如果你有用到）
@@ -925,6 +943,145 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             }
             DispatchQueue.main.async { result(ok) }
         }
+    }
+
+    // MARK: - 文件传输（FT）
+
+    /**
+     * 配置文件传输（需在 initSDK/initToken 之前调用，FT 模块随 SDK init 自动启用）。
+     * 返回值：状态码（0 成功，负数为错误码）。
+     */
+    private func setFTConfig(args: [String: Any], result: @escaping FlutterResult) {
+        var stun: STUNConfig?
+        if let stunDict = args["stun"] as? [String: Any] {
+            let servers = (stunDict["servers"] as? [String]) ?? []
+            let enableIPv6 = (stunDict["enableIPv6"] as? Bool) ?? false
+            let enable = (stunDict["enable"] as? Bool) ?? true
+            if !servers.isEmpty {
+                stun = STUNConfig(servers: servers, enableIPv6: enableIPv6, enable: enable)
+            }
+        }
+        var turn: TURNConfig?
+        if let turnDict = args["turn"] as? [String: Any] {
+            turn = TURNConfig(
+                enable: (turnDict["enable"] as? Bool) ?? false,
+                server: turnDict["server"] as? String,
+                realm: turnDict["realm"] as? String,
+                username: turnDict["username"] as? String,
+                password: turnDict["password"] as? String
+            )
+        }
+        let config = SIPFTConfig(
+            enable: (args["enable"] as? Bool) ?? false,
+            maxSessions: uint32Value(args["maxSessions"]),
+            windowSize: uint32Value(args["windowSize"]),
+            chunkSize: uint32Value(args["chunkSize"]),
+            initialRtoMs: uint32Value(args["initialRtoMs"]),
+            rtoMinMs: uint32Value(args["rtoMinMs"]),
+            maxRetransmit: uint32Value(args["maxRetransmit"]),
+            sessionTimeoutMs: uint32Value(args["sessionTimeoutMs"]),
+            answerTimeoutMs: uint32Value(args["answerTimeoutMs"]),
+            connectTimeoutMs: uint32Value(args["connectTimeoutMs"]),
+            inactiveTimeoutMs: uint32Value(args["inactiveTimeoutMs"]),
+            burstMax: uint32Value(args["burstMax"]),
+            sendIntervalMs: uint32Value(args["sendIntervalMs"]),
+            kcpSndwnd: uint32Value(args["kcpSndwnd"]),
+            kcpRcvwnd: uint32Value(args["kcpRcvwnd"]),
+            kcpMaxWaitsnd: uint32Value(args["kcpMaxWaitsnd"]),
+            kcpDisableCc: (args["kcpDisableCc"] as? Bool) ?? false,
+            stun: stun,
+            turn: turn,
+            enableIpv6: (args["enableIpv6"] as? Bool) ?? false,
+            defaultSaveDir: args["defaultSaveDir"] as? String
+        )
+        let code = SIPManage.setupFTConfig(config: config)
+        result(code)
+    }
+
+    /**
+     * 发送文件（异步）。返回 {code, ftId, reqId:0}。
+     */
+    private func sendFile(args: [String: Any], result: @escaping FlutterResult) {
+        let ret = SIPHandle.sendFile(
+            accUuid: uint64Value(args["accUuid"]),
+            username: args["username"] as? String,
+            remoteIp: args["remoteIp"] as? String,
+            filePath: args["filePath"] as? String ?? "",
+            extra: args["extra"] as? String
+        )
+        result([
+            "code": ret.code,
+            "ftId": ret.ftId,
+            "reqId": 0,
+        ])
+    }
+
+    /**
+     * 请求对端发送文件（pull，异步）。返回 {code, reqId, ftId:0}。
+     */
+    private func requestFile(args: [String: Any], result: @escaping FlutterResult) {
+        let ret = SIPHandle.requestFile(
+            accUuid: uint64Value(args["accUuid"]),
+            username: args["username"] as? String,
+            remoteIp: args["remoteIp"] as? String,
+            fileName: args["fileName"] as? String ?? "",
+            extra: args["extra"] as? String
+        )
+        result([
+            "code": ret.code,
+            "reqId": ret.reqId,
+            "ftId": 0,
+        ])
+    }
+
+    /**
+     * 回应对端的文件请求（accept=true 同意并给本地文件路径，false 拒绝）。
+     */
+    private func respondRequest(args: [String: Any], result: @escaping FlutterResult) {
+        let code = SIPHandle.respondRequest(
+            reqId: uint64Value(args["reqId"]),
+            accept: (args["accept"] as? Bool) ?? false,
+            filePath: args["filePath"] as? String
+        )
+        result(code)
+    }
+
+    /**
+     * 接受对端的文件传输请求。
+     */
+    private func acceptFile(args: [String: Any], result: @escaping FlutterResult) {
+        let code = SIPHandle.acceptFile(
+            ftId: uint64Value(args["ftId"]),
+            savePath: args["savePath"] as? String
+        )
+        result(code)
+    }
+
+    /**
+     * 拒绝对端的文件传输请求。
+     */
+    private func rejectFile(args: [String: Any], result: @escaping FlutterResult) {
+        let code = SIPHandle.rejectFile(
+            ftId: uint64Value(args["ftId"]),
+            reason: args["reason"] as? String
+        )
+        result(code)
+    }
+
+    /**
+     * 取消传输（发送端或接收端均可）。
+     */
+    private func cancelFile(args: [String: Any], result: @escaping FlutterResult) {
+        let code = SIPHandle.cancelFile(ftId: uint64Value(args["ftId"]))
+        result(code)
+    }
+
+    /**
+     * 查询会话状态（成功返回 state 枚举，失败返回负错误码）。
+     */
+    private func getFileState(args: [String: Any], result: @escaping FlutterResult) {
+        let state = SIPHandle.getFileState(ftId: uint64Value(args["ftId"]))
+        result(state)
     }
 
     private func topViewController() -> UIViewController? {

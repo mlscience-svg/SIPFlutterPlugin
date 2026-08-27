@@ -171,7 +171,7 @@ public class CameraHandle {
                 @Override
                 public void onOpened(@NonNull CameraDevice camera) {
                     cameraDevice = camera;
-                    createCameraCaptureSession();
+                    createCameraCaptureSession(camera);
                     for (CameraStateChangeCallback callback : callbacks) {
                         callback.onStateChange(true);
                     }
@@ -206,17 +206,23 @@ public class CameraHandle {
         // 不设置回调监听器
     }
 
-    private void createCameraCaptureSession() {
+    private void createCameraCaptureSession(final CameraDevice camera) {
         try {
             Surface imageReaderSurface = imageReader.getSurface();
-            cameraDevice.createCaptureSession(
+            camera.createCaptureSession(
                     Collections.singletonList(imageReaderSurface),
                     new CameraCaptureSession.StateCallback() {
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession session) {
+                            // 会话配置期间摄像头可能已被 close()（挂断/退出画面）置空，
+                            // 再往下操作会 NPE 或对已关闭的 device 抛异常，这里直接收尾返回。
+                            if (cameraDevice != camera) {
+                                session.close();
+                                return;
+                            }
                             captureSession = session;
                             try {
-                                CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                                CaptureRequest.Builder captureRequestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                                 captureRequestBuilder.addTarget(imageReaderSurface);
                                 apply3ASettings(captureRequestBuilder);
                                 captureSession.setRepeatingRequest(captureRequestBuilder.build(), null, null);

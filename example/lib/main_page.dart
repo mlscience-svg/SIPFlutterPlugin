@@ -4,6 +4,7 @@ import 'package:sip_sdk_flutter_example/sip_manage.dart';
 
 import 'call_page.dart';
 import 'config_storage.dart';
+import 'file_transfer_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -255,6 +256,15 @@ class _MainPageState extends State<MainPage> {
                 child: const Text("call"),
               ),
             ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const FileTransferPage()),
+              );
+            },
+            child: const Text("文件传输测试"),
           ),
         ],
       ),

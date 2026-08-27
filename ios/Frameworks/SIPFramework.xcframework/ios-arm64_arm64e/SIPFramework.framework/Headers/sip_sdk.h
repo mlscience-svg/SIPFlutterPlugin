@@ -94,6 +94,7 @@ extern "C"
 
     typedef struct
     {
+        sdk_bool_t enable;      // 是否开启stun
         int count;              // stun 服务器数量
         char servers[8][64];    // stun 服务器地址
         sdk_bool_t enable_ipv6; // 是否使用 ipv6

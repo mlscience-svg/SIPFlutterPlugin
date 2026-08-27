@@ -2,4 +2,14 @@
     package="com.sip.flutter.sip_sdk_flutter">
 
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <application>
+        <!-- 全屏视频播放页：独立 Activity 完整覆盖应用，播放 AVI 时不影响背后 UI。
+             configChanges 处理旋转避免重建；不设 screenOrientation（跟随用户持机方向）。 -->
+        <activity
+            android:name=".VideoPlayerActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:configChanges="orientation|screenSize|keyboardHidden|keyboard|screenLayout|smallestScreenSize|uiMode|density|fontScale|locale|layoutDirection" />
+    </application>
 </manifest>

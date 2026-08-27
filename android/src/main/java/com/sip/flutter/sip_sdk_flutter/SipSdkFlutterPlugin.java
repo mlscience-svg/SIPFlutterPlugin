@@ -4,7 +4,6 @@ import static com.sip.sdk.entity.SDKConstants.SDK_DTMF_INFO_TYPE;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,7 +11,12 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
+import android.media.MediaCodec;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaMuxer;
+import android.media.MediaPlayer;
 import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -22,12 +26,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Size;
-import android.view.Gravity;
-import android.widget.FrameLayout;
-import android.widget.MediaController;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.VideoView;
+import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
@@ -47,6 +46,9 @@ import com.sip.sdk.entity.SDKConstants;
 import com.sip.sdk.entity.SIPSDKCallParam;
 import com.sip.sdk.entity.SIPSDKConfig;
 import com.sip.sdk.entity.SIPSDKDtmfInfoParam;
+import com.sip.sdk.entity.SIPSDKFTConfig;
+import com.sip.sdk.entity.SIPSDKFTParam;
+import com.sip.sdk.entity.SIPSDKFTRequestParam;
 import com.sip.sdk.entity.SIPSDKLocalConfig;
 import com.sip.sdk.entity.SIPSDKMediaConfig;
 import com.sip.sdk.entity.SIPSDKMediaH264Fmtp;
@@ -62,6 +64,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +78,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.view.TextureRegistry;
 
 /**
  * SipSdkFlutterPlugin
@@ -93,6 +97,12 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     /** 当前宿主 Activity，用于全屏播放视频。 */
     private Activity currentActivity;
 
+    /** Flutter 引擎纹理注册表：页面内嵌视频（TextureRegistry + MediaPlayer）用它建 SurfaceTexture。 */
+    private TextureRegistry textureRegistry;
+
+    /** 内嵌视频播放器表：textureId → 播放句柄。 */
+    private final Map<Long, VideoPlayerHandle> videoPlayers = new HashMap<>();
+
     /** App 公共根目录名 = App 显示名「Parsian Tasvir」去空格。相册 / lastframe / callrecord 都在它下面。 */
     private static final String APP_ROOT = "ParsianTasvir";
 
@@ -109,6 +119,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         if (context == null) {
             context = flutterPluginBinding.getApplicationContext();
         }
+        textureRegistry = flutterPluginBinding.getTextureRegistry();
         H264CodecImpl.addRawListener(CallMediaRecorder.instance());
     }
 
@@ -119,6 +130,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
                 .getPlatformViewRegistry()
                 .registerViewFactory(
                         "com.sip.flutter/VideoComponentView", new VideoComponentFactory(binding.getActivity()));
+        // 页面内嵌视频播放（门铃 AVI）走 TextureRegistry + MediaPlayer（createVideoPlayer 等方法），
+        // 不再注册平台视图：平台视图的 Texture/SurfaceView 在这类设备上无法在 Flutter 纹理里合成。
     }
 
     @Override
@@ -139,9 +152,11 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         H264CodecImpl.removeRawListener(CallMediaRecorder.instance());
+        releaseAllVideoPlayers();
         channel.setMethodCallHandler(null);
         channel = null;
         context = null;
+        textureRegistry = null;
         this.flutterPluginBinding = null;
     }
 
@@ -183,6 +198,10 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             saveMediaToAlbum(call.arguments(), result);
         } else if (call.method.equals("deleteMediaFiles")) {
             deleteMediaFiles(call.arguments(), result);
+        } else if (call.method.equals("extractVideoFrame")) {
+            extractVideoFrame(call.arguments(), result);
+        } else if (call.method.equals("clipVideo")) {
+            clipVideo(call.arguments(), result);
         } else if (call.method.equals("call")) {
             call(call.arguments(), result);
         } else if (call.method.equals("answer")) {
@@ -219,6 +238,40 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             setImageRatio(call.arguments(), result);
         } else if (call.method.equals("clearVideo")) {
             clearVideo(call.arguments(), result);
+        } else if (call.method.equals("setFTConfig")) {
+            setFTConfig(call.arguments(), result);
+        } else if (call.method.equals("sendFile")) {
+            sendFile(call.arguments(), result);
+        } else if (call.method.equals("requestFile")) {
+            requestFile(call.arguments(), result);
+        } else if (call.method.equals("respondRequest")) {
+            respondRequest(call.arguments(), result);
+        } else if (call.method.equals("acceptFile")) {
+            acceptFile(call.arguments(), result);
+        } else if (call.method.equals("moveToDocuments")) {
+            moveToDocuments(call.arguments(), result);
+        } else if (call.method.equals("findCallRecordMedia")) {
+            findCallRecordMedia(call.arguments(), result);
+        } else if (call.method.equals("resolveMediaPath")) {
+            resolveMediaPath(call.arguments(), result);
+        } else if (call.method.equals("rejectFile")) {
+            rejectFile(call.arguments(), result);
+        } else if (call.method.equals("cancelFile")) {
+            cancelFile(call.arguments(), result);
+        } else if (call.method.equals("getFileState")) {
+            getFileState(call.arguments(), result);
+        } else if (call.method.equals("createVideoPlayer")) {
+            createVideoPlayer(call.arguments(), result);
+        } else if (call.method.equals("videoPlayerPlay")) {
+            videoPlayerPlay(call.arguments(), result);
+        } else if (call.method.equals("videoPlayerPause")) {
+            videoPlayerPause(call.arguments(), result);
+        } else if (call.method.equals("videoPlayerSeekTo")) {
+            videoPlayerSeekTo(call.arguments(), result);
+        } else if (call.method.equals("videoPlayerState")) {
+            videoPlayerState(call.arguments(), result);
+        } else if (call.method.equals("disposeVideoPlayer")) {
+            disposeVideoPlayer(call.arguments(), result);
         } else {
             result.notImplemented();
         }
@@ -273,6 +326,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             List<String> servers = MapUtils.get(stunDict, "servers", new ArrayList<>());
             boolean enableIPv6 = MapUtils.get(stunDict, "enableIPv6", false);
             stunConfig = new SIPSDKStunConfig();
+            stunConfig.enable = MapUtils.get(stunDict, "enable", false);
             stunConfig.count = servers.size();
             stunConfig.servers = servers;
             stunConfig.enableIpv6 = enableIPv6;
@@ -351,6 +405,7 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             List<String> servers = MapUtils.get(stunDict, "servers", new ArrayList<>());
             boolean enableIPv6 = MapUtils.get(stunDict, "enableIPv6", false);
             stunConfig = new SIPSDKStunConfig();
+            stunConfig.enable = MapUtils.get(stunDict, "enable", false);
             stunConfig.count = servers.size();
             stunConfig.servers = servers;
             stunConfig.enableIpv6 = enableIPv6;
@@ -729,12 +784,151 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
 
     private void copyFileTo(File source, OutputStream os) throws IOException {
         try (InputStream in = new FileInputStream(source)) {
-            byte[] buffer = new byte[64 * 1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                os.write(buffer, 0, read);
-            }
+            copyFileTo(in, os);
         }
+    }
+
+    private void copyFileTo(InputStream in, OutputStream os) throws IOException {
+        byte[] buffer = new byte[64 * 1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            os.write(buffer, 0, read);
+        }
+    }
+
+    /* ==================== 媒体预览：视频抓帧 / 视频截取 ==================== */
+
+    /**
+     * 按播放位置从视频（content:// 或文件路径）抓一帧存为 JPG 到相册。
+     * @param args uri=视频地址, positionMs=播放位置(毫秒), relativePath=目标相册相对路径
+     * @return 保存后的 content:// URI / 绝对路径；失败或参数不齐返回 null
+     */
+    private void extractVideoFrame(Map<String, Object> args, MethodChannel.Result result) {
+        String uriStr = MapUtils.get(args, "uri", null);
+        int positionMs = MapUtils.get(args, "positionMs", 0);
+        String relativePath = MapUtils.get(args, "relativePath", null);
+        if (uriStr == null || uriStr.isEmpty()
+                || relativePath == null || relativePath.isEmpty()) {
+            result.success(null);
+            return;
+        }
+        // 解码取帧 + JPEG 编码 + MediaStore 写入都耗时，放后台线程。
+        new Thread(() -> {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            try {
+                retriever.setDataSource(context, Uri.parse(uriStr));
+                Bitmap bitmap = retriever.getFrameAtTime(
+                        positionMs * 1000L, MediaMetadataRetriever.OPTION_CLOSEST);
+                if (bitmap == null) {
+                    postResult(result, null, null);
+                    return;
+                }
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, output);
+                String path = saveToDocuments(output.toByteArray(), relativePath);
+                postResult(result, path, null);
+            } catch (Exception e) {
+                postResult(result, null, e);
+            } finally {
+                try {
+                    retriever.release();
+                } catch (Exception ignored) {
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 把视频从 startUs 截到 endUs（微秒）输出一段 MP4 到相册。
+     * 只拷视频轨不重编码（转封装），先写 app 缓存再经 [writeVideoToDocuments] 搬进公共目录。
+     * @param args uri=视频地址, startUs/endUs=起止微秒, relativePath=目标相册相对路径
+     * @return 保存后的 content:// URI / 绝对路径；失败或参数不齐返回 null
+     */
+    private void clipVideo(Map<String, Object> args, MethodChannel.Result result) {
+        String uriStr = MapUtils.get(args, "uri", null);
+        long startUs = MapUtils.get(args, "startUs", 0L);
+        long endUs = MapUtils.get(args, "endUs", 0L);
+        String relativePath = MapUtils.get(args, "relativePath", null);
+        if (uriStr == null || uriStr.isEmpty()
+                || relativePath == null || relativePath.isEmpty()
+                || endUs <= startUs) {
+            result.success(null);
+            return;
+        }
+        new Thread(() -> {
+            File temp = new File(context.getCacheDir(),
+                    "clip_" + System.currentTimeMillis() + ".mp4");
+            MediaExtractor extractor = new MediaExtractor();
+            MediaMuxer muxer = null;
+            try {
+                extractor.setDataSource(context, Uri.parse(uriStr), null);
+                int videoTrack = -1;
+                for (int i = 0; i < extractor.getTrackCount(); i++) {
+                    MediaFormat format = extractor.getTrackFormat(i);
+                    String mime = format.getString(MediaFormat.KEY_MIME);
+                    if (mime != null && mime.startsWith("video/")) {
+                        videoTrack = i;
+                        break;
+                    }
+                }
+                if (videoTrack < 0) {
+                    postResult(result, null, null);
+                    return;
+                }
+                extractor.selectTrack(videoTrack);
+                MediaFormat format = extractor.getTrackFormat(videoTrack);
+                int bufferSize = 2 * 1024 * 1024;
+                if (format.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
+                    bufferSize = Math.max(bufferSize,
+                            format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE));
+                }
+                ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+                muxer = new MediaMuxer(temp.getAbsolutePath(),
+                        MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+                muxer.addTrack(format);
+                muxer.start();
+                // seek 到 startUs 前一个关键帧，起点帧是 P 帧时也必须有前面的关键帧才能解码。
+                extractor.seekTo(startUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC);
+                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+                long basePts = -1;
+                while (true) {
+                    int size = extractor.readSampleData(buffer, 0);
+                    if (size < 0) break;
+                    long ptsUs = extractor.getSampleTime();
+                    if (ptsUs > endUs) break;
+                    if (basePts < 0) basePts = ptsUs;
+                    info.offset = 0;
+                    info.size = size;
+                    info.presentationTimeUs = ptsUs - basePts;
+                    info.flags = extractor.getSampleFlags();
+                    muxer.writeSampleData(videoTrack, buffer, info);
+                    extractor.advance();
+                }
+                muxer.stop();
+                muxer.release();
+                muxer = null;
+                extractor.release();
+                extractor = null;
+                String path = writeVideoToDocuments(temp, relativePath);
+                postResult(result, path, null);
+            } catch (Exception e) {
+                temp.delete();
+                postResult(result, null, e);
+            } finally {
+                if (muxer != null) {
+                    try {
+                        muxer.release();
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (extractor != null) {
+                    try {
+                        extractor.release();
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }).start();
     }
 
     /* ============================ 相册（拍照/录制视频）读取 ============================ */
@@ -995,6 +1189,153 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         }
     }
 
+    /* ==================== 页面内嵌视频播放（TextureRegistry + MediaPlayer） ====================
+     * 门铃 AVI（H.264-in-AVI）：ExoPlayer 无 AVI demuxer，media_kit 在这类设备上读不出
+     * AVI 时长，只有系统 MediaPlayer 能正常播。但平台视图（TextureView/SurfaceView）无法在
+     * 这台设备的 Flutter 纹理管线里合成。所以这里用 video_player 同款架构：用 Flutter 引擎的
+     * TextureRegistry 建一个 SurfaceTexture 交给 MediaPlayer 渲染，Flutter 侧用
+     * Texture(textureId:) 显示 —— 引擎纹理管线，渲染可靠。 */
+
+    /** 播放句柄：MediaPlayer + 它渲染进的引擎纹理。 */
+    private static class VideoPlayerHandle {
+        final MediaPlayer player;
+        final TextureRegistry.SurfaceTextureEntry entry;
+        volatile String error;
+
+        VideoPlayerHandle(MediaPlayer player, TextureRegistry.SurfaceTextureEntry entry) {
+            this.player = player;
+            this.entry = entry;
+        }
+    }
+
+    /** 创建内嵌播放器：返回 textureId（Dart 侧 Texture(textureId:) 显示），创建失败返回 null。 */
+    private void createVideoPlayer(Map<String, Object> args, MethodChannel.Result result) {
+        String uri = MapUtils.get(args, "uri", null);
+        if (uri == null || uri.isEmpty() || textureRegistry == null) {
+            result.success(null);
+            return;
+        }
+        try {
+            TextureRegistry.SurfaceTextureEntry entry = textureRegistry.createSurfaceTexture();
+            MediaPlayer player = new MediaPlayer();
+            player.setDataSource(context, Uri.parse(uri));
+            // 先把 Surface 交给 MediaPlayer，prepare 后开始渲染进纹理
+            player.setSurface(new Surface(entry.surfaceTexture()));
+            VideoPlayerHandle handle = new VideoPlayerHandle(player, entry);
+            videoPlayers.put(entry.id(), handle);
+            player.setOnPreparedListener(mp -> {
+                try {
+                    mp.start();
+                } catch (Exception ignored) {
+                }
+            });
+            player.setOnErrorListener((mp, what, extra) -> {
+                handle.error = "MediaPlayer error what=" + what + " extra=" + extra;
+                return true;
+            });
+            player.setOnCompletionListener(mp -> {
+            });
+            player.prepareAsync();
+            result.success(entry.id());
+        } catch (Exception e) {
+            android.util.Log.e("SIPSDK", "createVideoPlayer failed: " + uri, e);
+            result.error("CREATE_FAILED", e.getMessage(), null);
+        }
+    }
+
+    private void videoPlayerPlay(Map<String, Object> args, MethodChannel.Result result) {
+        VideoPlayerHandle handle = videoPlayers.get(MapUtils.get(args, "textureId", 0L));
+        if (handle != null) {
+            try {
+                handle.player.start();
+            } catch (Exception ignored) {
+            }
+        }
+        result.success(null);
+    }
+
+    private void videoPlayerPause(Map<String, Object> args, MethodChannel.Result result) {
+        VideoPlayerHandle handle = videoPlayers.get(MapUtils.get(args, "textureId", 0L));
+        if (handle != null) {
+            try {
+                handle.player.pause();
+            } catch (Exception ignored) {
+            }
+        }
+        result.success(null);
+    }
+
+    private void videoPlayerSeekTo(Map<String, Object> args, MethodChannel.Result result) {
+        VideoPlayerHandle handle = videoPlayers.get(MapUtils.get(args, "textureId", 0L));
+        int ms = MapUtils.get(args, "ms", 0);
+        if (handle != null) {
+            try {
+                handle.player.seekTo(ms);
+            } catch (Exception ignored) {
+            }
+        }
+        result.success(null);
+    }
+
+    /** 查询播放状态：{position, duration, playing, error?}。 */
+    private void videoPlayerState(Map<String, Object> args, MethodChannel.Result result) {
+        VideoPlayerHandle handle = videoPlayers.get(MapUtils.get(args, "textureId", 0L));
+        Map<String, Object> s = new HashMap<>();
+        if (handle != null) {
+            MediaPlayer p = handle.player;
+            try {
+                s.put("position", (long) p.getCurrentPosition());
+                s.put("duration", (long) p.getDuration());
+                s.put("playing", p.isPlaying());
+                // prepare 后上报视频宽高，Dart 侧按此等比显示（防止拉伸变形）
+                int vw = p.getVideoWidth();
+                int vh = p.getVideoHeight();
+                if (vw > 0 && vh > 0) {
+                    s.put("videoWidth", vw);
+                    s.put("videoHeight", vh);
+                }
+            } catch (Exception ignored) {
+                s.put("position", 0L);
+                s.put("duration", 0L);
+                s.put("playing", false);
+            }
+            if (handle.error != null) s.put("error", handle.error);
+        } else {
+            s.put("position", 0L);
+            s.put("duration", 0L);
+            s.put("playing", false);
+        }
+        result.success(s);
+    }
+
+    /** 释放播放器与纹理，幂等。 */
+    private void disposeVideoPlayer(Map<String, Object> args, MethodChannel.Result result) {
+        long id = MapUtils.get(args, "textureId", 0L);
+        VideoPlayerHandle handle = videoPlayers.remove(id);
+        if (handle != null) {
+            releaseHandle(handle);
+        }
+        result.success(null);
+    }
+
+    private void releaseAllVideoPlayers() {
+        for (VideoPlayerHandle handle : videoPlayers.values()) {
+            releaseHandle(handle);
+        }
+        videoPlayers.clear();
+    }
+
+    private void releaseHandle(VideoPlayerHandle handle) {
+        try {
+            handle.player.release();
+        } catch (Exception ignored) {
+        }
+        try {
+            handle.entry.release();
+        } catch (Exception ignored) {
+        }
+    }
+
     private void playMediaVideo(Map<String, Object> args, MethodChannel.Result result) {
         String uriStr = MapUtils.get(args, "uri", null);
         if (uriStr == null || uriStr.isEmpty()) {
@@ -1006,62 +1347,13 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             result.success(null);
             return;
         }
-        final Uri uri = Uri.parse(uriStr);
-        activity.runOnUiThread(() -> showVideoPlayer(activity, uri));
+        // 启动独立全屏播放 Activity：完整覆盖应用，不会把背后 App 界面顶上去。
+        activity.runOnUiThread(() -> {
+            Intent intent = new Intent(activity, VideoPlayerActivity.class);
+            intent.putExtra("uri", uriStr);
+            activity.startActivity(intent);
+        });
         result.success(null);
-    }
-
-    /** 全屏 VideoView 播放录制视频，右上角 ✕ 关闭。 */
-    private void showVideoPlayer(Activity activity, Uri uri) {
-        Dialog dialog = new Dialog(activity, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        dialog.setCancelable(true);
-
-        FrameLayout frame = new FrameLayout(activity);
-        frame.setBackgroundColor(Color.BLACK);
-
-        VideoView videoView = new VideoView(activity);
-        frame.addView(videoView, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-
-        ProgressBar progressBar = new ProgressBar(activity);
-        frame.addView(progressBar, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-
-        TextView close = new TextView(activity);
-        close.setText("✕");
-        close.setTextSize(26);
-        close.setTextColor(Color.WHITE);
-        close.setGravity(Gravity.CENTER);
-        FrameLayout.LayoutParams closeLp =
-                new FrameLayout.LayoutParams(72, 72, Gravity.TOP | Gravity.END);
-        closeLp.topMargin = 48;
-        closeLp.rightMargin = 20;
-        close.setOnClickListener(v -> dialog.dismiss());
-        frame.addView(close, closeLp);
-
-        MediaController controller = new MediaController(activity);
-        videoView.setMediaController(controller);
-        videoView.setOnPreparedListener(mp -> {
-            progressBar.setVisibility(android.view.View.GONE);
-            videoView.start();
-        });
-        videoView.setOnErrorListener((mp, what, extra) -> {
-            progressBar.setVisibility(android.view.View.GONE);
-            dialog.dismiss();
-            return true;
-        });
-        videoView.setOnCompletionListener(mp -> dialog.dismiss());
-        dialog.setOnDismissListener(d -> {
-            try {
-                videoView.stopPlayback();
-            } catch (Exception ignored) {
-            }
-        });
-
-        dialog.setContentView(frame);
-        dialog.show();
-        videoView.setVideoURI(uri);
     }
 
     /** 把某个媒体条目复制到系统相册（图库）。Q+ 走 MediaStore 插入，<=28 复制到公共 Pictures/Movies 目录并触发媒体扫描。 */
@@ -1400,5 +1692,325 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             view.clearVideo();
         }
         result.success(null);
+    }
+
+    // ---- 文件传输（FT） ----
+
+    /** 配置文件传输（需在 initSDK / initToken 之前调用）。返回状态码，0 表示成功。 */
+    private void setFTConfig(Map<String, Object> args, MethodChannel.Result result) {
+        SIPSDKFTConfig config = new SIPSDKFTConfig();
+        config.enable = MapUtils.get(args, "enable", false);
+        config.maxSessions = MapUtils.get(args, "maxSessions", 0);
+        config.windowSize = MapUtils.get(args, "windowSize", 0);
+        config.chunkSize = MapUtils.get(args, "chunkSize", 0);
+        config.initialRtoMs = MapUtils.get(args, "initialRtoMs", 0);
+        config.rtoMinMs = MapUtils.get(args, "rtoMinMs", 0);
+        config.maxRetransmit = MapUtils.get(args, "maxRetransmit", 0);
+        config.sessionTimeoutMs = MapUtils.get(args, "sessionTimeoutMs", 0);
+        config.answerTimeoutMs = MapUtils.get(args, "answerTimeoutMs", 0);
+        config.connectTimeoutMs = MapUtils.get(args, "connectTimeoutMs", 0);
+        config.inactiveTimeoutMs = MapUtils.get(args, "inactiveTimeoutMs", 0);
+        config.burstMax = MapUtils.get(args, "burstMax", 0);
+        config.sendIntervalMs = MapUtils.get(args, "sendIntervalMs", 0);
+        config.kcpSndwnd = MapUtils.get(args, "kcpSndwnd", 0);
+        config.kcpRcvwnd = MapUtils.get(args, "kcpRcvwnd", 0);
+        config.kcpMaxWaitsnd = MapUtils.get(args, "kcpMaxWaitsnd", 0);
+        config.kcpDisableCc = MapUtils.get(args, "kcpDisableCc", false);
+        config.enableIpv6 = MapUtils.get(args, "enableIpv6", false);
+        config.defaultSaveDir = MapUtils.get(args, "defaultSaveDir", "");
+
+        Map<String, Object> stunDict = MapUtils.getMap(args, "stun");
+        if (stunDict != null) {
+            SIPSDKStunConfig stun = new SIPSDKStunConfig();
+            List<String> servers = MapUtils.get(stunDict, "servers", new ArrayList<String>());
+            stun.servers = servers;
+            stun.count = servers.size();
+            stun.enable = MapUtils.get(stunDict, "enable", false);
+            stun.enableIpv6 = MapUtils.get(stunDict, "enableIPv6", false);
+            config.stun = stun;
+        }
+
+        Map<String, Object> turnDict = MapUtils.getMap(args, "turn");
+        if (turnDict != null) {
+            SIPSDKTurnConfig turn = new SIPSDKTurnConfig();
+            turn.enable = MapUtils.get(turnDict, "enable", false);
+            turn.server = MapUtils.get(turnDict, "server", null);
+            turn.realm = MapUtils.get(turnDict, "realm", null);
+            turn.username = MapUtils.get(turnDict, "username", null);
+            turn.password = MapUtils.get(turnDict, "password", null);
+            config.turn = turn;
+        }
+
+        int code = SIPSDK.setFTConfig(config);
+        result.success(code);
+    }
+
+    /** 发送文件（异步）。成功后回填 ftId。 */
+    private void sendFile(Map<String, Object> args, MethodChannel.Result result) {
+        SIPSDKFTParam param = new SIPSDKFTParam();
+        param.accUuid = MapUtils.get(args, "accUuid", 0L);
+        param.username = MapUtils.get(args, "username", "");
+        param.remoteIp = MapUtils.get(args, "remoteIp", "");
+        param.filePath = MapUtils.get(args, "filePath", "");
+        param.extra = MapUtils.get(args, "extra", "");
+        int code = SIPSDK.sendFile(param);
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("code", code);
+        ret.put("ftId", param.ftId);
+        ret.put("reqId", 0L);
+        result.success(ret);
+    }
+
+    /** 请求对端发送文件（pull，异步）。成功后回填 reqId。 */
+    private void requestFile(Map<String, Object> args, MethodChannel.Result result) {
+        SIPSDKFTRequestParam param = new SIPSDKFTRequestParam();
+        param.accUuid = MapUtils.get(args, "accUuid", 0L);
+        param.username = MapUtils.get(args, "username", "");
+        param.remoteIp = MapUtils.get(args, "remoteIp", "");
+        param.fileName = MapUtils.get(args, "fileName", "");
+        param.extra = MapUtils.get(args, "extra", "");
+        int code = SIPSDK.requestFile(param);
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("code", code);
+        ret.put("reqId", param.reqId);
+        ret.put("ftId", 0L);
+        result.success(ret);
+    }
+
+    /** 回应对端的文件请求（accept=true 同意并给本地文件路径，false 拒绝）。 */
+    private void respondRequest(Map<String, Object> args, MethodChannel.Result result) {
+        long reqId = MapUtils.get(args, "reqId", 0L);
+        boolean accept = MapUtils.get(args, "accept", false);
+        String filePath = MapUtils.get(args, "filePath", null);
+        int code = SIPSDK.respondRequest(reqId, accept, filePath);
+        result.success(code);
+    }
+
+    /** 接受对端的文件传输请求。 */
+    private void acceptFile(Map<String, Object> args, MethodChannel.Result result) {
+        long ftId = MapUtils.get(args, "ftId", 0L);
+        String savePath = MapUtils.get(args, "savePath", null);
+        int code = SIPSDK.acceptFile(ftId, savePath);
+        result.success(code);
+    }
+
+    /**
+     * 把已接收的 FT 文件搬进公共存储（与拍照/录像一致），成功后删除临时源文件。
+     * relativePath 是相对媒体根目录的完整路径（含文件名），如
+     * ParsianTasvir/callrecord/<设备id>/CRP_00012.JPG。
+     * Q+ 走 MediaStore（返回 content:// URI，公共 Documents 可见可导出）；
+     * ≤28 直接写公共 Documents 文件系统（返回绝对路径）。
+     */
+    private void moveToDocuments(Map<String, Object> args, MethodChannel.Result result) {
+        String sourcePath = MapUtils.get(args, "sourcePath", null);
+        String relativePath = MapUtils.get(args, "relativePath", null);
+        if (sourcePath == null || sourcePath.isEmpty()
+                || relativePath == null || relativePath.isEmpty()) {
+            result.success(null);
+            return;
+        }
+        // MediaStore 写入 / 大文件拷贝耗时，放到后台线程，完成后回主线程回调。
+        new Thread(() -> {
+            try {
+                String target = moveToDocumentsInternal(new File(sourcePath), relativePath);
+                postResult(result, target, null);
+            } catch (Exception e) {
+                postResult(result, null, e);
+            }
+        }).start();
+    }
+
+    /** moveToDocuments 的工作实现：拷贝 + 删源，返回 content:// URI（Q+）或绝对路径（≤28）。 */
+    private String moveToDocumentsInternal(File source, String relativePath)
+            throws IOException {
+        if (!source.exists() || source.length() <= 0) {
+            throw new IOException("Received file missing: " + source);
+        }
+        String[] parts = splitRelativePath(relativePath);
+        String dirRelative = parts[0];   // "Documents/ParsianTasvir/callrecord/<id>"（不含文件名）
+        String fileName = parts[1];
+        String lower = fileName.toLowerCase();
+        String mimeType;
+        if (lower.endsWith(".mp4")) {
+            mimeType = "video/mp4";
+        } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
+            mimeType = "image/jpeg";
+        } else if (lower.endsWith(".png")) {
+            mimeType = "image/png";
+        } else {
+            mimeType = "application/octet-stream";
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, dirRelative);
+            Uri uri = context.getContentResolver().insert(
+                    MediaStore.Files.getContentUri("external"), values);
+            if (uri == null) {
+                throw new IOException("Failed to create MediaStore entry");
+            }
+            try (OutputStream os = context.getContentResolver().openOutputStream(uri)) {
+                if (os == null) {
+                    throw new IOException("Failed to open output stream");
+                }
+                copyFileTo(source, os);
+            }
+            source.delete();   // 删临时文件失败不阻断
+            return uri.toString();
+        } else {
+            File dir = new File(Environment.getExternalStorageDirectory(), dirRelative);
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw new IOException("Failed to create directory: " + dir);
+            }
+            File target = new File(dir, fileName);
+            try (FileOutputStream fos = new FileOutputStream(target)) {
+                copyFileTo(source, fos);
+            }
+            source.delete();   // 删临时文件失败不阻断
+            return target.getAbsolutePath();
+        }
+    }
+
+    /**
+     * 按 (设备key, 文件名) 查公共目录里的 FT 缓存媒体。
+     * [directory] 缓存子目录（callrecord=呼叫记录文件，media=设备媒体库文件），
+     * 缺省 callrecord。Q+ 查 MediaStore（RELATIVE_PATH + DISPLAY_NAME 精确匹配）；
+     * ≤28 直接找文件。命中返回 content:// URI（Q+）/ 绝对路径（≤28），未命中返回 null。
+     */
+    private void findCallRecordMedia(Map<String, Object> args, MethodChannel.Result result) {
+        String deviceKey = MapUtils.get(args, "deviceKey", null);
+        String fileName = MapUtils.get(args, "fileName", null);
+        String directory = MapUtils.get(args, "directory", null);
+        if (directory == null || directory.isEmpty()) directory = "callrecord";
+        if (deviceKey == null || deviceKey.isEmpty()
+                || fileName == null || fileName.isEmpty()) {
+            result.success(null);
+            return;
+        }
+        String safeDir = sanitizeSegment(directory);
+        new Thread(() -> {
+            try {
+                String found = findCallRecordMediaInternal(deviceKey, fileName, safeDir);
+                postResult(result, found, null);
+            } catch (Exception e) {
+                postResult(result, null, e);
+            }
+        }).start();
+    }
+
+    private String findCallRecordMediaInternal(String deviceKey, String fileName, String directory) {
+        String safeKey = sanitizeSegment(deviceKey);
+        String safeName = new File(fileName).getName();
+        String dirRel = "Documents/ParsianTasvir/" + directory + "/" + safeKey + "/";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            Uri collection = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL);
+            String[] projection = {MediaStore.MediaColumns._ID};
+            // 写入时 RELATIVE_PATH 传的是不带结尾斜杠的目录；MediaStore 归一化后
+            // 多数机型带斜杠、个别机型（如 OPPO）不带。用两种形式精确匹配兼容，
+            // 避免因斜杠差异把已缓存文件判为未命中而重新下载。
+            String dirRelNoSlash = "Documents/ParsianTasvir/" + directory + "/" + safeKey;
+            String selection = "(" + MediaStore.MediaColumns.RELATIVE_PATH + " = ? OR "
+                    + MediaStore.MediaColumns.RELATIVE_PATH + " = ?) AND "
+                    + MediaStore.MediaColumns.DISPLAY_NAME + " = ?";
+            String[] selectionArgs = {dirRel, dirRelNoSlash, safeName};
+            try (Cursor cursor = context.getContentResolver().query(
+                    collection, projection, selection, selectionArgs,
+                    MediaStore.MediaColumns.DATE_ADDED + " DESC")) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    long id = cursor.getLong(0);
+                    return ContentUris.withAppendedId(collection, id).toString();
+                }
+            }
+            return null;
+        } else {
+            File file = new File(Environment.getExternalStorageDirectory(), dirRel + safeName);
+            return file.exists() ? file.getAbsolutePath() : null;
+        }
+    }
+
+    /** 与 Dart 侧 MediaStorage.sanitize 对齐：非法路径字符替换为 '_'，防止嵌套目录。 */
+    private String sanitizeSegment(String s) {
+        return s.replaceAll("[/\\\\:*?\"<>|\\s]", "_");
+    }
+
+    /** 把媒体 URI 解析成本地可读的绝对路径，供 media_kit 等需要文件路径的播放器使用。
+     *  绝对路径原样返回；content:// 先查 MediaStore._data（本 App 自己写入的媒体
+     *  在作用域存储下可直接读），查不到/不可读时流式拷贝到应用 cache 目录。失败返回 null。 */
+    private void resolveMediaPath(Map<String, Object> args, MethodChannel.Result result) {
+        String uri = MapUtils.get(args, "uri", null);
+        if (uri == null || uri.isEmpty()) {
+            result.success(null);
+            return;
+        }
+        new Thread(() -> {
+            try {
+                result.success(resolveMediaPathInternal(uri));
+            } catch (Exception e) {
+                result.success(null);
+            }
+        }).start();
+    }
+
+    private String resolveMediaPathInternal(String uri) {
+        if (uri.startsWith("/")) {
+            return new File(uri).exists() ? uri : null;
+        }
+        if (!uri.startsWith("content://")) {
+            return null;
+        }
+        try {
+            Uri contentUri = Uri.parse(uri);
+            try (Cursor cursor = context.getContentResolver().query(
+                    contentUri, new String[]{MediaStore.MediaColumns.DATA},
+                    null, null, null)) {
+                if (cursor != null && cursor.moveToFirst()) {
+                    String data = cursor.getString(0);
+                    if (data != null && !data.isEmpty()) {
+                        File f = new File(data);
+                        if (f.exists() && f.canRead()) {
+                            return data;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        // 兜底：流式拷贝到应用 cache 目录（对 media_kit 可读）。
+        try {
+            InputStream in = context.getContentResolver().openInputStream(Uri.parse(uri));
+            if (in == null) return null;
+            String name = new File(uri).getName();
+            if (name == null || name.isEmpty()) name = "media_" + System.currentTimeMillis();
+            File cacheFile = new File(context.getCacheDir(), name);
+            try (InputStream is = in; OutputStream os = new FileOutputStream(cacheFile)) {
+                copyFileTo(is, os);
+            }
+            return cacheFile.getAbsolutePath();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** 拒绝对端的文件传输请求。 */
+    private void rejectFile(Map<String, Object> args, MethodChannel.Result result) {
+        long ftId = MapUtils.get(args, "ftId", 0L);
+        String reason = MapUtils.get(args, "reason", null);
+        int code = SIPSDK.rejectFile(ftId, reason);
+        result.success(code);
+    }
+
+    /** 取消传输（发送端或接收端均可）。 */
+    private void cancelFile(Map<String, Object> args, MethodChannel.Result result) {
+        long ftId = MapUtils.get(args, "ftId", 0L);
+        int code = SIPSDK.cancelFile(ftId);
+        result.success(code);
+    }
+
+    /** 查询会话状态（成功返回 state 枚举，失败返回负错误码）。 */
+    private void getFileState(Map<String, Object> args, MethodChannel.Result result) {
+        long ftId = MapUtils.get(args, "ftId", 0L);
+        int code = SIPSDK.getFileState(ftId);
+        result.success(code);
     }
 }
