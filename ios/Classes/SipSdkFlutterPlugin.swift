@@ -9,6 +9,15 @@ import Photos
 public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     static var channel: FlutterMethodChannel?
 
+    /// 内嵌文件视频播放（createVideoPlayer 等 channel 方法）：textureId -> 播放器。
+    /// Android 用 TextureRegistry + MediaPlayer；iOS 用 FlutterTexture + AVPlayer。
+    private var textureRegistry: FlutterTextureRegistry?
+    private var nativePlayers: [Int64: NativeFilePlayer] = [:]
+
+    /// 最近一次 createVideoPlayer 失败的原因：Dart 侧拿到 null 后用
+    /// videoPlayerLastError 查询，便于真机定位（成功时为 nil）。
+    private var lastVideoPlayerError: String?
+
     /// 打印当前加载的 SIPFramework 版本,用于确认打包的 SDK 是否已更新
     private func printSIPFrameworkVersion() {
         let fw = Bundle(identifier: "com.sip.SIPFramework")
@@ -52,11 +61,19 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "sip_sdk_flutter", binaryMessenger: registrar.messenger())
         let instance = SipSdkFlutterPlugin()
+        instance.textureRegistry = registrar.textures()
         SipSdkFlutterPlugin.channel = channel
         registrar.addMethodCallDelegate(instance, channel: channel)
         // 注册视频界面
         let factory = VideoComponentFactory(messenger: registrar.messenger())
         registrar.register(factory, withId: "com.sip.flutter/VideoComponentView")
+    }
+
+    /// 引擎拆解时释放所有内嵌播放器（纹理与临时 MP4）。
+    public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        for p in nativePlayers.values { p.dispose() }
+        nativePlayers.removeAll()
+        textureRegistry = nil
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -189,6 +206,8 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             deleteMediaFiles(args: call.arguments as? [String: Any] ?? [:], result: result)
         case "setFTConfig":
             setFTConfig(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "setStunConfig":
+            setStunConfig(args: call.arguments as? [String: Any] ?? [:], result: result)
         case "sendFile":
             sendFile(args: call.arguments as? [String: Any] ?? [:], result: result)
         case "requestFile":
@@ -203,6 +222,20 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             cancelFile(args: call.arguments as? [String: Any] ?? [:], result: result)
         case "getFileState":
             getFileState(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "createVideoPlayer":
+            createVideoPlayer(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "videoPlayerPlay":
+            videoPlayerPlay(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "videoPlayerPause":
+            videoPlayerPause(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "videoPlayerSeekTo":
+            videoPlayerSeekTo(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "videoPlayerState":
+            videoPlayerState(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "disposeVideoPlayer":
+            disposeVideoPlayer(args: call.arguments as? [String: Any] ?? [:], result: result)
+        case "videoPlayerLastError":
+            videoPlayerLastError(args: call.arguments as? [String: Any] ?? [:], result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -900,7 +933,10 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
         }
         let fileURL = URL(fileURLWithPath: uri)
         let isVideo = uri.lowercased().hasSuffix(".mp4")
-        PHPhotoLibrary.requestAuthorization { status in
+        // 只新增到相册、不读取。iOS 14+ 用 .addOnly(仅需 NSPhotoLibraryAddUsageDescription)，
+        // 避免向用户索要整个相册读写权限；iOS 13 及更早没有 .addOnly，只能用全量
+        // requestAuthorization(依赖 Info.plist 的 NSPhotoLibraryUsageDescription)。
+        let handleAuth: (PHAuthorizationStatus) -> Void = { status in
             let allowed: Bool
             if #available(iOS 14, *) {
                 allowed = status == .authorized || status == .limited
@@ -920,6 +956,12 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
             } completionHandler: { success, _ in
                 DispatchQueue.main.async { result(success) }
             }
+        }
+        if #available(iOS 14, *) {
+            PHPhotoLibrary.requestAuthorization(for: .addOnly, handler: handleAuth)
+        } else {
+            // iOS 13 旧 API 参数无标签
+            PHPhotoLibrary.requestAuthorization(handleAuth)
         }
     }
 
@@ -951,6 +993,16 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
      * 配置文件传输（需在 initSDK/initToken 之前调用，FT 模块随 SDK init 自动启用）。
      * 返回值：状态码（0 成功，负数为错误码）。
      */
+    /// 单独设置 STUN（运行期接口，服务端地址变更后重新调用即可，不需要重启 SDK）。
+    /// 注意 enable 缺省按 Dart 侧的 false 走（initSDK 里那处历史缺省是 true）。
+    private func setStunConfig(args: [String: Any], result: @escaping FlutterResult) {
+        let servers = (args["servers"] as? [String]) ?? []
+        let enableIPv6 = (args["enableIPv6"] as? Bool) ?? false
+        let enable = (args["enable"] as? Bool) ?? false
+        let stun = STUNConfig(servers: servers, enableIPv6: enableIPv6, enable: enable)
+        result(Int(SIPHandle.setStunConfig(stun)))
+    }
+
     private func setFTConfig(args: [String: Any], result: @escaping FlutterResult) {
         var stun: STUNConfig?
         if let stunDict = args["stun"] as? [String: Any] {
@@ -1082,6 +1134,194 @@ public class SipSdkFlutterPlugin: NSObject, FlutterPlugin {
     private func getFileState(args: [String: Any], result: @escaping FlutterResult) {
         let state = SIPHandle.getFileState(ftId: uint64Value(args["ftId"]))
         result(state)
+    }
+
+    // MARK: - 内嵌文件视频播放（createVideoPlayer / videoPlayer*）
+
+    /// Dart 侧 textureId（平台 int）转 Int64。
+    private func textureIdValue(_ value: Any?) -> Int64 {
+        if let v = value as? Int64 { return v }
+        if let v = value as? Int { return Int64(v) }
+        if let v = value as? NSNumber { return v.int64Value }
+        return 0
+    }
+
+    /// 把门铃录像 .AVI 无损重封装成临时目录里的 MP4（AVPlayer 解不了 AVI）。
+    /// 纯函数：不触碰实例状态（不写 lastVideoPlayerError），返回 (url, 失败原因)，
+    /// 以便放到后台队列执行，避免在主线程上做几 MB 的拷贝拖慢引擎首帧/UI。
+    private static func remuxAviToTempMp4(_ path: String) -> (url: URL?, error: String?) {
+        do {
+            let tmp = FileManager.default.temporaryDirectory
+                .appendingPathComponent("parsian_\(UUID().uuidString).mp4")
+            let stats = try AviToMp4Remuxer.remux(
+                from: URL(fileURLWithPath: path), to: tmp)
+            guard stats.frameCount > 0 else {
+                NSLog("[SIPSDK] remux fail: 0 frames path=%@", path)
+                return (nil, "remux: 0 frames")
+            }
+            NSLog("[SIPSDK] remux ok frames=%ld %ldx%ld durMs=%ld -> %@",
+                  stats.frameCount, stats.width, stats.height,
+                  stats.durationMs, tmp.path)
+            return (tmp, nil)
+        } catch {
+            NSLog("[SIPSDK] remux AVI failed: %@ path=%@",
+                  String(describing: error), path)
+            return (nil, "remux: \(error)")
+        }
+    }
+
+    /// 创建内嵌播放器：返回 textureId（Dart 用 Texture(textureId:) 显示）；
+    /// 门铃视频/照片都先落到本地再展示，iOS 侧传入的是绝对路径（或 file://）。
+    /// 失败返回 null，Dart 按「打开失败」提示。
+    private func createVideoPlayer(args: [String: Any], result: @escaping FlutterResult) {
+        guard let uri = args["uri"] as? String, !uri.isEmpty else {
+            lastVideoPlayerError = "uri empty"
+            NSLog("[SIPSDK] createVideoPlayer FAIL: uri empty")
+            result(nil)
+            return
+        }
+        guard let registry = textureRegistry else {
+            lastVideoPlayerError = "textureRegistry nil"
+            NSLog("[SIPSDK] createVideoPlayer FAIL: textureRegistry nil uri=%@", uri)
+            result(nil)
+            return
+        }
+        let path: String
+        if uri.hasPrefix("file://"), let u = URL(string: uri) {
+            path = u.path
+        } else {
+            path = uri
+        }
+        NSLog("[SIPSDK] createVideoPlayer uri=%@", path)
+        guard FileManager.default.fileExists(atPath: path) else {
+            lastVideoPlayerError = "file not found"
+            NSLog("[SIPSDK] createVideoPlayer FAIL: file not found %@", path)
+            result(nil)
+            return
+        }
+
+        // 非 AVI（已是 AVPlayer 能播的 MP4 等）：直接建播放器（带注册重试）。
+        guard path.lowercased().hasSuffix(".avi") else {
+            attemptPlayerStart(url: URL(fileURLWithPath: path),
+                               deleteOnClose: false,
+                               registry: registry,
+                               sourcePath: path,
+                               retriesLeft: 8,
+                               result: result)
+            return
+        }
+
+        // 门铃录像原始容器是 AVI：先重封装成临时 MP4 再交给 AVPlayer。
+        // remux 放到后台队列，不阻塞主线程（阻塞会拖到引擎首帧渲染）。
+        lastVideoPlayerError = nil
+        DispatchQueue.global(qos: .userInitiated).async {
+            let r = Self.remuxAviToTempMp4(path)
+            DispatchQueue.main.async {
+                guard let mp4 = r.url else {
+                    self.lastVideoPlayerError = r.error ?? "remux nil"
+                    NSLog("[SIPSDK] createVideoPlayer FAIL: remux nil uri=%@", path)
+                    result(nil)
+                    return
+                }
+                self.attemptPlayerStart(url: mp4,
+                                        deleteOnClose: true,
+                                        registry: registry,
+                                        sourcePath: path,
+                                        retriesLeft: 8,
+                                        result: result)
+            }
+        }
+    }
+
+    /// 建 NativeFilePlayer 并注册纹理。冷启动后第一次 registerTexture 偶发返回 0
+    /// （日志 `registerTexture returned 0`，引擎纹理管线尚在预热，紧跟着往往是
+    /// AVFoundation 的 FigApplicationStateMonitor 告警）；同一文件第二次打开总能成功。
+    /// 故注册失败时不直接判失败，而是在主线程短延时让步给引擎后重试几次。
+    /// NativeFilePlayer init 返回 nil 只有两种可能：文件缺失（此处已确保存在）、
+    /// registerTexture 返回 0，所以 nil 就等价于注册失败，可放心重试。
+    private func attemptPlayerStart(url playURL: URL,
+                                    deleteOnClose: Bool,
+                                    registry: FlutterTextureRegistry,
+                                    sourcePath: String,
+                                    retriesLeft: Int,
+                                    result: @escaping FlutterResult) {
+        guard FileManager.default.fileExists(atPath: playURL.path) else {
+            lastVideoPlayerError = "tmp file missing"
+            NSLog("[SIPSDK] createVideoPlayer FAIL: tmp file missing %@",
+                  playURL.path)
+            result(nil)
+            return
+        }
+        if let p = NativeFilePlayer(fileURL: playURL,
+                                    deleteOnClose: deleteOnClose,
+                                    registry: registry) {
+            lastVideoPlayerError = nil
+            nativePlayers[p.textureId] = p
+            p.start()
+            NSLog("[SIPSDK] createVideoPlayer OK textureId=%lld uri=%@",
+                  p.textureId, sourcePath)
+            result(NSNumber(value: p.textureId))
+            return
+        }
+        guard retriesLeft > 0 else {
+            lastVideoPlayerError = "registerTexture returned 0"
+            NSLog("[SIPSDK] createVideoPlayer FAIL after retries: registerTexture 0 uri=%@",
+                  sourcePath)
+            if deleteOnClose { try? FileManager.default.removeItem(at: playURL) }
+            result(nil)
+            return
+        }
+        NSLog("[SIPSDK] registerTexture returned 0, retry in 120ms (left=%ld) uri=%@",
+              retriesLeft, sourcePath)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            self.attemptPlayerStart(url: playURL,
+                                    deleteOnClose: deleteOnClose,
+                                    registry: registry,
+                                    sourcePath: sourcePath,
+                                    retriesLeft: retriesLeft - 1,
+                                    result: result)
+        }
+    }
+
+    /// Dart 侧 createVideoPlayer 拿到 null 后调用，取回失败原因。
+    private func videoPlayerLastError(args: [String: Any], result: @escaping FlutterResult) {
+        result(lastVideoPlayerError ?? "")
+    }
+
+    private func videoPlayerPlay(args: [String: Any], result: @escaping FlutterResult) {
+        nativePlayers[textureIdValue(args["textureId"])]?.play()
+        result(nil)
+    }
+
+    private func videoPlayerPause(args: [String: Any], result: @escaping FlutterResult) {
+        nativePlayers[textureIdValue(args["textureId"])]?.pause()
+        result(nil)
+    }
+
+    private func videoPlayerSeekTo(args: [String: Any], result: @escaping FlutterResult) {
+        let ms = (args["ms"] as? NSNumber)?.intValue ?? 0
+        nativePlayers[textureIdValue(args["textureId"])]?.seek(toMilliseconds: ms)
+        result(nil)
+    }
+
+    /// 查询播放状态：{position, duration, playing, videoWidth, videoHeight}。
+    private func videoPlayerState(args: [String: Any], result: @escaping FlutterResult) {
+        let tid = textureIdValue(args["textureId"])
+        if let p = nativePlayers[tid] {
+            let s = p.state()
+            // AVPlayer 播放期错误（非 create 阶段）也记录，Dart 可取回展示。
+            if let e = s["error"] as? String, !e.isEmpty {
+                lastVideoPlayerError = "state: \(e)"
+            }
+            result(s)
+        } else {
+            result(["position": 0, "duration": 0, "playing": false])
+        }
+    }
+
+    private func disposeVideoPlayer(args: [String: Any], result: @escaping FlutterResult) {
+        nativePlayers.removeValue(forKey: textureIdValue(args["textureId"]))?.dispose()
+        result(nil)
     }
 
     private func topViewController() -> UIViewController? {

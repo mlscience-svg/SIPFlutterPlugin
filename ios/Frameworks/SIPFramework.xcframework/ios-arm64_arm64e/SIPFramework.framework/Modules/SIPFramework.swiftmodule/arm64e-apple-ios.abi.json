@@ -1038,6 +1038,150 @@
         "moduleName": "SIPFramework"
       },
       {
+        "kind": "TypeDecl",
+        "name": "RemoteVideoFrameCenter",
+        "printedName": "RemoteVideoFrameCenter",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "shared",
+            "printedName": "shared",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "RemoteVideoFrameCenter",
+                "printedName": "SIPFramework.RemoteVideoFrameCenter",
+                "usr": "s:12SIPFramework22RemoteVideoFrameCenterC"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework22RemoteVideoFrameCenterC6sharedACvpZ",
+            "mangledName": "$s12SIPFramework22RemoteVideoFrameCenterC6sharedACvpZ",
+            "moduleName": "SIPFramework",
+            "static": true,
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "RemoteVideoFrameCenter",
+                    "printedName": "SIPFramework.RemoteVideoFrameCenter",
+                    "usr": "s:12SIPFramework22RemoteVideoFrameCenterC"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework22RemoteVideoFrameCenterC6sharedACvgZ",
+                "mangledName": "$s12SIPFramework22RemoteVideoFrameCenterC6sharedACvgZ",
+                "moduleName": "SIPFramework",
+                "static": true,
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "latestPixelBuffer",
+            "printedName": "latestPixelBuffer",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "CoreVideo.CVBuffer?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CVBuffer",
+                    "printedName": "CoreVideo.CVBuffer",
+                    "usr": "c:@T@CVBufferRef"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:12SIPFramework22RemoteVideoFrameCenterC17latestPixelBufferSo11CVBufferRefaSgvp",
+            "mangledName": "$s12SIPFramework22RemoteVideoFrameCenterC17latestPixelBufferSo11CVBufferRefaSgvp",
+            "moduleName": "SIPFramework",
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "CoreVideo.CVBuffer?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CVBuffer",
+                        "printedName": "CoreVideo.CVBuffer",
+                        "usr": "c:@T@CVBufferRef"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:12SIPFramework22RemoteVideoFrameCenterC17latestPixelBufferSo11CVBufferRefaSgvg",
+                "mangledName": "$s12SIPFramework22RemoteVideoFrameCenterC17latestPixelBufferSo11CVBufferRefaSgvg",
+                "moduleName": "SIPFramework",
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:12SIPFramework22RemoteVideoFrameCenterC",
+        "mangledName": "$s12SIPFramework22RemoteVideoFrameCenterC",
+        "moduleName": "SIPFramework",
+        "declAttributes": [
+          "Final",
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "hasMissingDesignatedInitializers": true,
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
         "kind": "Import",
         "name": "VideoToolbox",
         "printedName": "VideoToolbox",
@@ -13382,6 +13526,36 @@
           },
           {
             "kind": "Function",
+            "name": "setStunConfig",
+            "printedName": "setStunConfig(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "usr": "s:s5Int32V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "STUNConfig",
+                "printedName": "SIPFramework.STUNConfig",
+                "usr": "s:12SIPFramework10STUNConfigV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:12SIPFramework9SIPHandleC13setStunConfigys5Int32VAA10STUNConfigVFZ",
+            "mangledName": "$s12SIPFramework9SIPHandleC13setStunConfigys5Int32VAA10STUNConfigVFZ",
+            "moduleName": "SIPFramework",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "setFTConfig",
             "printedName": "setFTConfig(config:callbacks:)",
             "children": [
@@ -14635,6 +14809,55 @@
                 "accessorKind": "get"
               }
             ]
+          },
+          {
+            "kind": "Var",
+            "name": "REMOTE_VIDEO_FRAME_READY",
+            "printedName": "REMOTE_VIDEO_FRAME_READY",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Name",
+                "printedName": "Foundation.NSNotification.Name",
+                "usr": "c:@T@NSNotificationName"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:So18NSNotificationNamea12SIPFrameworkE24REMOTE_VIDEO_FRAME_READYABvpZ",
+            "mangledName": "$sSo18NSNotificationNamea12SIPFrameworkE24REMOTE_VIDEO_FRAME_READYABvpZ",
+            "moduleName": "SIPFramework",
+            "static": true,
+            "declAttributes": [
+              "HasInitialValue",
+              "HasStorage",
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Name",
+                    "printedName": "Foundation.NSNotification.Name",
+                    "usr": "c:@T@NSNotificationName"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:So18NSNotificationNamea12SIPFrameworkE24REMOTE_VIDEO_FRAME_READYABvgZ",
+                "mangledName": "$sSo18NSNotificationNamea12SIPFrameworkE24REMOTE_VIDEO_FRAME_READYABvgZ",
+                "moduleName": "SIPFramework",
+                "static": true,
+                "implicit": true,
+                "isFromExtension": true,
+                "accessorKind": "get"
+              }
+            ]
           }
         ],
         "declKind": "Struct",
@@ -14865,106 +15088,113 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
+      "kind": "StringLiteral",
+      "offset": 417,
+      "length": 26,
+      "value": "\"REMOTE_VIDEO_FRAME_READY\""
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 316,
+      "offset": 1552,
       "length": 4,
       "value": "0x01"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 340,
+      "offset": 1576,
       "length": 4,
       "value": "0x05"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 364,
+      "offset": 1600,
       "length": 4,
       "value": "0x06"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 388,
+      "offset": 1624,
       "length": 4,
       "value": "0x07"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 412,
+      "offset": 1648,
       "length": 4,
       "value": "0x08"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 436,
+      "offset": 1672,
       "length": 4,
       "value": "0x09"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 566,
+      "offset": 1802,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 591,
+      "offset": 1827,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "BooleanLiteral",
-      "offset": 827,
+      "offset": 2063,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "BooleanLiteral",
-      "offset": 865,
+      "offset": 2101,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 905,
+      "offset": 2141,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "IntegerLiteral",
-      "offset": 952,
+      "offset": 2188,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "StringLiteral",
-      "offset": 6456,
+      "offset": 11805,
       "length": 45,
       "value": "\"Decompression failed with status: \""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "StringLiteral",
-      "offset": 6500,
+      "offset": 11849,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/H264Decoder.swift",
       "kind": "StringLiteral",
-      "offset": 6602,
+      "offset": 11951,
       "length": 43,
       "value": "\"No image buffer in decompression callback\""
     },
@@ -15698,8 +15928,29 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1023,
+      "length": 2,
+      "value": "12"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
+      "kind": "FloatLiteral",
+      "offset": 1076,
+      "length": 4,
+      "value": "0.25"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
       "kind": "BooleanLiteral",
-      "offset": 1386,
+      "offset": 2380,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
+      "kind": "BooleanLiteral",
+      "offset": 2959,
       "length": 4,
       "value": "true"
     },
@@ -15733,24 +15984,45 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 598,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "StringLiteral",
-      "offset": 538,
+      "offset": 681,
       "length": 19,
       "value": "\"pcm.recorder.sync\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "Array",
-      "offset": 600,
+      "offset": 743,
       "length": 2,
       "value": "[]"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "BooleanLiteral",
-      "offset": 670,
+      "offset": 813,
       "length": 5,
       "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1224,
+      "length": 2,
+      "value": "12"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
+      "kind": "FloatLiteral",
+      "offset": 1277,
+      "length": 4,
+      "value": "0.25"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/SIPSDKDeviceUUID.swift",

@@ -21,6 +21,7 @@ import 'entitys/sip_sdk_ft_request_info.dart';
 import 'entitys/sip_sdk_ft_request_param.dart';
 import 'entitys/sip_sdk_ft_result.dart';
 import 'entitys/sip_sdk_registrar_config.dart';
+import 'entitys/sip_sdk_stun_config.dart';
 import 'sip_sdk_flutter_platform_interface.dart';
 
 /// An implementation of [SipSdkFlutterPlatform] that uses method channels.
@@ -427,6 +428,11 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
   }
 
   @override
+  Future<int> setStunConfig(STUNConfig config) async {
+    return await methodChannel.invokeMethod<int>('setStunConfig', config.toJson()) ?? 0;
+  }
+
+  @override
   Future<SIPSDKFTResult> sendFile(SIPSDKFTParam param) async {
     final raw = await methodChannel.invokeMethod<Map<dynamic, dynamic>>(
       'sendFile',
@@ -533,6 +539,13 @@ class MethodChannelSipSdkFlutter extends SipSdkFlutterPlatform {
     await methodChannel.invokeMethod<void>('disposeVideoPlayer', {
       'textureId': textureId,
     });
+  }
+
+  @override
+  Future<String> videoPlayerLastError() async {
+    return (await methodChannel.invokeMethod<String>('videoPlayerLastError'))
+            ??
+        '';
   }
 
   @override

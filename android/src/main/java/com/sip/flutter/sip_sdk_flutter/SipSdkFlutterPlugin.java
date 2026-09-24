@@ -240,6 +240,8 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             clearVideo(call.arguments(), result);
         } else if (call.method.equals("setFTConfig")) {
             setFTConfig(call.arguments(), result);
+        } else if (call.method.equals("setStunConfig")) {
+            setStunConfig(call.arguments(), result);
         } else if (call.method.equals("sendFile")) {
             sendFile(call.arguments(), result);
         } else if (call.method.equals("requestFile")) {
@@ -272,6 +274,9 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             videoPlayerState(call.arguments(), result);
         } else if (call.method.equals("disposeVideoPlayer")) {
             disposeVideoPlayer(call.arguments(), result);
+        } else if (call.method.equals("videoPlayerLastError")) {
+            // iOS 调试用；Android 无对应失败原因，返回空串。
+            result.success("");
         } else {
             result.notImplemented();
         }
@@ -1742,6 +1747,22 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
         }
 
         int code = SIPSDK.setFTConfig(config);
+        result.success(code);
+    }
+
+    /**
+     * 单独设置 STUN（运行期接口，服务端地址变更后重新调用即可，不需要重启 SDK）。
+     */
+    private void setStunConfig(Map<String, Object> args, MethodChannel.Result result) {
+        SIPSDKStunConfig config = new SIPSDKStunConfig();
+        List<String> servers = MapUtils.get(args, "servers", new ArrayList<String>());
+        // C 侧是 char servers[8][64]，Dart 那层已经截过，这里再兜一道
+        config.servers = servers.size() > 8 ? new ArrayList<>(servers.subList(0, 8)) : servers;
+        config.count = config.servers.size();
+        config.enable = MapUtils.get(args, "enable", false);
+        config.enableIpv6 = MapUtils.get(args, "enableIPv6", false);
+
+        int code = SIPSDK.setStunConfig(config);
         result.success(code);
     }
 

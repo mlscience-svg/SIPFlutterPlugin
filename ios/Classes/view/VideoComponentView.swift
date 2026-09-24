@@ -1,4 +1,5 @@
 import AVFoundation
+import CoreImage
 import Flutter
 import SIPFramework
 import UIKit
@@ -47,12 +48,25 @@ class VideoComponentView: NSObject, FlutterPlatformView {
 
     func captureSnapshot(completion: @escaping (Data?) -> Void) {
         DispatchQueue.main.async {
-            let renderer = UIGraphicsImageRenderer(bounds: self._view.bounds)
-            let image = renderer.image { _ in
-                self._view.drawHierarchy(in: self._view.bounds, afterScreenUpdates: true)
+            // 远端画面由 AVSampleBufferDisplayLayer 硬件呈现，drawHierarchy 截出来是黑的；
+            // 改用 SDK 并行硬解出的真实解码帧。
+            guard let buffer = RemoteVideoFrameCenter.shared.latestPixelBuffer,
+                  let image = Self.makeImage(from: buffer) else {
+                completion(nil)
+                return
             }
             completion(image.pngData())
         }
+    }
+
+    private static let imageContext = CIContext()
+
+    private static func makeImage(from buffer: CVPixelBuffer) -> UIImage? {
+        let ciImage = CIImage(cvPixelBuffer: buffer)
+        guard let cgImage = imageContext.createCGImage(ciImage, from: ciImage.extent) else {
+            return nil
+        }
+        return UIImage(cgImage: cgImage)
     }
 
     private func setupVideoView(view: UIView) {

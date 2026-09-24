@@ -212,6 +212,14 @@ extern "C"
         char *last_status_text; // 消息内容
     } sip_sdk_call_status_param;
 
+    typedef struct sip_sdk_stun_state_param
+    {
+        sdk_bool_t success;     // 是否解析成功(服务器可达)
+        sdk_status_t status;    // 原始状态码(0 为成功)
+        char server[64];        // 成功的 STUN 服务器("host:port")，失败时为空
+        char server_addr[64];   // 该服务器解析后的地址("ip:port")，失败时为空
+    } sip_sdk_stun_state_param;
+
     typedef struct sip_sdk_observer
     {
         void (*on_log_callback)(int level, const char *data, int len);
@@ -226,6 +234,8 @@ extern "C"
         void (*on_call_status)(sip_sdk_call_status_param param);
         void (*expire_warning_callback)(time_t expire_time, time_t current_time);
         void (*activity_check_callback)();
+        // STUN 解析结果(初始化时与运行期 sip_sdk_set_stun_config 都会回调)
+        void (*on_stun_state)(sip_sdk_stun_state_param stun_state_param);
     } sip_sdk_observer;
 
     typedef struct sip_sdk_common_config
@@ -262,17 +272,19 @@ extern "C"
     sdk_status_t sip_sdk_license_info(char *info, size_t size);
 
     sdk_status_t sip_sdk_init();
-
     sdk_status_t sip_sdk_init_interna(const char *token);
 
     sdk_status_t sip_sdk_init_token(const char *token,
-                                    const char *clientId,
-                                    const char *clientSecret,
-                                    const char *packageName);
+                                    const char *client_id,
+                                    const char *client_secret,
+                                    const char *package_name);
+
 
     sdk_status_t sip_sdk_destroy();
 
     sdk_status_t sip_sdk_handle_ip_change(const sip_sdk_ip_change_param ip_change_param);
+
+    sdk_status_t sip_sdk_set_stun_config(const sip_sdk_stun_config config);
 
     sdk_status_t local_account(const sip_sdk_local_config local_config);
 

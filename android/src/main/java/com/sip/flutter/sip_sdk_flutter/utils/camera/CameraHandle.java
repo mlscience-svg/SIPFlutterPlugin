@@ -208,6 +208,12 @@ public class CameraHandle {
 
     private void createCameraCaptureSession(final CameraDevice camera) {
         try {
+            // onOpened 回调异步触发，期间可能已被 close()（挂断/退出画面）置空
+            // imageReader，直接判空返回避免 NPE 崩溃，等下次 open 重建。
+            if (imageReader == null) {
+                Log.w(TAG, "Create camera capture session skipped: imageReader already closed");
+                return;
+            }
             Surface imageReaderSurface = imageReader.getSurface();
             camera.createCaptureSession(
                     Collections.singletonList(imageReaderSurface),

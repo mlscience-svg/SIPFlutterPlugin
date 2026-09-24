@@ -153,6 +153,8 @@ extern "C"
 
     extern sip_sdk_media_config sip_media_config;
 
+    sdk_status_t sip_sdk_set_audio_codec(const sip_sdk_audio_codec *codecs, unsigned count);
+
     audio_media_frame *alloc_audio_media_frame(sdk_size_t size);
 
     sdk_status_t free_audio_media_frame(audio_media_frame *media_frame);

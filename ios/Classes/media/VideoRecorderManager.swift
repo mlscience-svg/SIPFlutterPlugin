@@ -1,105 +1,95 @@
 import AVFoundation
+import QuartzCore
+import SIPFramework
 import UIKit
 
-/// 通话录像：按目标帧率抓取视频视图（VideoComponentView）画面，逐帧写入
-/// AVAssetWriter 合成 H.264 MP4。与拍照共用 drawHierarchy 机制，确保能
-/// 捕获到 AVSampleBufferDisplayLayer 渲染的对方画面。
+/// 通话录像：把 SDK 硬解出的真实解码帧（RemoteVideoFrameCenter）按目标帧率逐帧写入
+/// AVAssetWriter 合成 H.264 MP4。
+///
+/// 不抓屏幕：远端画面由 AVSampleBufferDisplayLayer 硬件呈现，UIKit 抓屏截不到
+/// （drawHierarchy 结果是黑的），只能消费解码器输出的 CVPixelBuffer。
 class VideoRecorderManager: NSObject {
     static let shared = VideoRecorderManager()
 
+    /// 串行化 writer 生命周期与写帧，避免与解码回调线程竞争
+    private let queue = DispatchQueue(label: "com.sip.videoRecorder.queue")
     private var assetWriter: AVAssetWriter?
     private var writerInput: AVAssetWriterInput?
     private var adaptor: AVAssetWriterInputPixelBufferAdaptor?
-    private var displayLink: CADisplayLink?
-    private weak var targetView: UIView?
     private var outputURL: URL?
     private var recording = false
     private var frameCount = 0
-    private var sessionStartTime: CFTimeInterval = 0
-    private var videoWidth = 640
-    private var videoHeight = 480
+    private var lastAppendHostTime: CFTimeInterval = 0
 
     private let targetFPS: Double = 15
+    private let minFrameInterval: CFTimeInterval
 
-    var isRecording: Bool { recording }
+    override init() {
+        minFrameInterval = 1.0 / 15
+        super.init()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(onRemoteFrame(_:)),
+            name: .REMOTE_VIDEO_FRAME_READY,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    var isRecording: Bool {
+        queue.sync { recording }
+    }
+
+    @objc private func onRemoteFrame(_ notification: Notification) {
+        queue.async { [weak self] in
+            self?.consumeLatestFrame()
+        }
+    }
 
     /// 开始录制，返回文件绝对路径；失败返回 nil。
+    /// view 参数保留兼容调用方，录制已不再依赖视图内容。
     func startRecording(view: UIView, relativePath: String) -> String? {
-        stopCapture()
+        queue.sync {
+            stopCaptureLocked()
+            // 若上一段没停干净还留着惰性 writer，先丢弃，确保新 URL 重新按尺寸创建
+            assetWriter = nil
+            writerInput = nil
+            adaptor = nil
 
-        let docs = NSSearchPathForDirectoriesInDomains(
-            .documentDirectory, .userDomainMask, true).first ?? ""
-        let url = URL(fileURLWithPath: (docs as NSString).appendingPathComponent(relativePath))
-        do {
-            try FileManager.default.createDirectory(
-                atPath: url.deletingLastPathComponent().path,
-                withIntermediateDirectories: true, attributes: nil)
-        } catch {
-            return nil
+            let docs = NSSearchPathForDirectoriesInDomains(
+                .documentDirectory, .userDomainMask, true).first ?? ""
+            let url = URL(fileURLWithPath: (docs as NSString).appendingPathComponent(relativePath))
+            do {
+                try FileManager.default.createDirectory(
+                    atPath: url.deletingLastPathComponent().path,
+                    withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                return nil
+            }
+
+            outputURL = url
+            recording = true
+            frameCount = 0
+            lastAppendHostTime = 0
+            return url.path
         }
-        let path = url.path
-
-        // 分辨率取视图实际尺寸（pt），兜底 640x480
-        let bounds = view.bounds
-        videoWidth = max(Int(bounds.width), 1)
-        videoHeight = max(Int(bounds.height), 1)
-
-        guard let writer = try? AVAssetWriter(outputURL: url, fileType: .mp4) else {
-            return nil
-        }
-        let settings: [String: Any] = [
-            AVVideoCodecKey: AVVideoCodecType.h264,
-            AVVideoWidthKey: videoWidth,
-            AVVideoHeightKey: videoHeight,
-            AVVideoCompressionPropertiesKey: [
-                AVVideoAverageBitRateKey: 1_200_000,
-                AVVideoExpectedSourceFrameRateKey: targetFPS,
-                AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel,
-            ],
-        ]
-        let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
-        input.expectsMediaDataInRealTime = true
-        let adaptor = AVAssetWriterInputPixelBufferAdaptor(
-            assetWriterInput: input,
-            sourcePixelBufferAttributes: [
-                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
-                kCVPixelBufferWidthKey as String: videoWidth,
-                kCVPixelBufferHeightKey as String: videoHeight,
-            ])
-        guard writer.canAdd(input) else { return nil }
-        writer.add(input)
-        guard writer.startWriting() else { return nil }
-        writer.startSession(atSourceTime: .zero)
-
-        assetWriter = writer
-        writerInput = input
-        self.adaptor = adaptor
-        targetView = view
-        outputURL = url
-        frameCount = 0
-        sessionStartTime = 0
-        recording = true
-
-        let link = CADisplayLink(target: self, selector: #selector(frameTick))
-        link.add(to: .main, forMode: .common)
-        displayLink = link
-        return path
     }
 
     /// 停止录制，回调返回文件绝对路径；无有效文件返回 nil。
     func stopRecording(completion: @escaping (String?) -> Void) {
-        // 停止抓帧（CADisplayLink 必须主线程操作），再后台封存 MP4
-        if Thread.isMainThread {
-            stopCapture()
-        } else {
-            DispatchQueue.main.sync { stopCapture() }
-        }
+        queue.async {
+            self.stopCaptureLocked()
+            let writer = self.assetWriter
+            let input = self.writerInput
+            let path = self.outputURL?.path
+            self.assetWriter = nil
+            self.writerInput = nil
+            self.adaptor = nil
+            self.outputURL = nil
 
-        let writer = assetWriter
-        let input = writerInput
-        let path = outputURL?.path
-
-        DispatchQueue.global(qos: .userInitiated).async {
             // 等编码器写完已接收的帧
             if let writer, let input {
                 let semaphore = DispatchSemaphore(value: 0)
@@ -121,85 +111,75 @@ class VideoRecorderManager: NSObject {
                 }
             }
             DispatchQueue.main.async {
-                self.cleanup()
                 completion(finalPath)
             }
         }
     }
 
-    private func stopCapture() {
-        guard recording else { return }
+    private func stopCaptureLocked() {
         recording = false
-        displayLink?.invalidate()
-        displayLink = nil
-        targetView = nil
     }
 
-    private func cleanup() {
-        assetWriter = nil
-        writerInput = nil
-        adaptor = nil
-        outputURL = nil
-        frameCount = 0
-        sessionStartTime = 0
-    }
+    /// 解码回调触发：若正在录制且还没到上一帧的节流间隔，则把最新解码帧写进 MP4。
+    private func consumeLatestFrame() {
+        guard recording else { return }
+        guard let buffer = RemoteVideoFrameCenter.shared.latestPixelBuffer else { return }
 
-    @objc private func frameTick(_ link: CADisplayLink) {
-        guard recording, let writer = assetWriter, writer.status == .writing,
-              let input = writerInput, input.isReadyForMoreMediaData,
-              let view = targetView else { return }
+        // 首个帧到达时才真正建 writer，分辨率按实际解码尺寸
+        if assetWriter == nil, !setupWriter(with: buffer) {
+            return
+        }
 
-        // 节流到目标帧率
-        let now = link.timestamp
-        if sessionStartTime == 0 { sessionStartTime = now }
-        let expectedFrames = Int((now - sessionStartTime) * targetFPS)
-        guard expectedFrames > frameCount else { return }
-        frameCount = expectedFrames
+        let now = CACurrentMediaTime()
+        if lastAppendHostTime == 0 {
+            lastAppendHostTime = now
+            return
+        }
+        guard now - lastAppendHostTime >= minFrameInterval else { return }
+        lastAppendHostTime = now
 
-        guard let pixelBuffer = makePixelBuffer(from: view) else { return }
+        frameCount += 1
         let pts = CMTime(value: CMTimeValue(frameCount), timescale: CMTimeScale(targetFPS))
-        adaptor?.append(pixelBuffer, withPresentationTime: pts)
+        adaptor?.append(buffer, withPresentationTime: pts)
     }
 
-    /// 把视图渲染进 BGRA 像素缓冲（与拍照一致的 drawHierarchy 方式）。
-    /// 直接 CVPixelBufferCreate 自建缓冲：adaptor 的 pixelBufferPool 惰性创建，
-    /// append 前取不到，不能依赖它。
-    private func makePixelBuffer(from view: UIView) -> CVPixelBuffer? {
-        var pixelBuffer: CVPixelBuffer?
-        CVPixelBufferCreate(
-            kCFAllocatorDefault,
-            videoWidth, videoHeight,
-            kCVPixelFormatType_32BGRA,
-            nil,
-            &pixelBuffer)
-        guard let pixelBuffer else { return nil }
+    private func setupWriter(with buffer: CVPixelBuffer) -> Bool {
+        guard let url = outputURL else { return false }
+        let width = Int(CVPixelBufferGetWidth(buffer))
+        let height = Int(CVPixelBufferGetHeight(buffer))
+        guard width > 0, height > 0 else { return false }
 
-        let format = UIGraphicsImageRendererFormat.default()
-        format.scale = 1.0
-        let renderer = UIGraphicsImageRenderer(bounds: view.bounds, format: format)
-        let image = renderer.image { _ in
-            view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
+        guard let writer = try? AVAssetWriter(outputURL: url, fileType: .mp4) else {
+            return false
         }
-        guard let cgImage = image.cgImage else { return pixelBuffer }
+        let settings: [String: Any] = [
+            AVVideoCodecKey: AVVideoCodecType.h264,
+            AVVideoWidthKey: width,
+            AVVideoHeightKey: height,
+            AVVideoCompressionPropertiesKey: [
+                AVVideoAverageBitRateKey: 1_200_000,
+                AVVideoExpectedSourceFrameRateKey: targetFPS,
+                AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel,
+            ],
+        ]
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
+        input.expectsMediaDataInRealTime = true
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(
+            assetWriterInput: input,
+            sourcePixelBufferAttributes: [
+                // 与 SDK 并行硬解输出的 NV12 保持一致（见 H264Decoder.createVideoToolboxSession）
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,
+                kCVPixelBufferWidthKey as String: width,
+                kCVPixelBufferHeightKey as String: height,
+            ])
+        guard writer.canAdd(input) else { return false }
+        writer.add(input)
+        guard writer.startWriting() else { return false }
+        writer.startSession(atSourceTime: .zero)
 
-        CVPixelBufferLockBaseAddress(pixelBuffer, [])
-        defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, []) }
-        guard let ctx = CGContext(
-            data: CVPixelBufferGetBaseAddress(pixelBuffer),
-            width: videoWidth,
-            height: videoHeight,
-            bitsPerComponent: 8,
-            bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue
-                | CGBitmapInfo.byteOrder32Little.rawValue
-        ) else {
-            return pixelBuffer
-        }
-        // CoreGraphics 与 UIKit 的 Y 轴相反，翻转后再绘制
-        ctx.translateBy(x: 0, y: CGFloat(videoHeight))
-        ctx.scaleBy(x: 1, y: -1)
-        ctx.draw(cgImage, in: CGRect(x: 0, y: 0, width: videoWidth, height: videoHeight))
-        return pixelBuffer
+        assetWriter = writer
+        writerInput = input
+        self.adaptor = adaptor
+        return true
     }
 }

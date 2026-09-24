@@ -49,6 +49,14 @@ extension SIPFramework.CameraCaptureManager : AVFoundation.AVCaptureVideoDataOut
 }
 extension Foundation.NSNotification.Name {
   public static let VIDEO_LAYER_READY: Foundation.Notification.Name
+  public static let REMOTE_VIDEO_FRAME_READY: Foundation.Notification.Name
+}
+@_hasMissingDesignatedInitializers final public class RemoteVideoFrameCenter {
+  public static let shared: SIPFramework.RemoteVideoFrameCenter
+  final public var latestPixelBuffer: CoreVideo.CVPixelBuffer? {
+    get
+  }
+  @objc deinit
 }
 @_hasMissingDesignatedInitializers public class H264Encoder {
   public static var econfig: SIPFramework.EncoderConfig
@@ -262,6 +270,7 @@ public struct SIPFTConfig {
   public static func dump()
   public static func removeLicense()
   public static func handleIpChange(restart: Swift.Bool, restartDelay: Swift.UInt32)
+  public static func setStunConfig(_ config: SIPFramework.STUNConfig) -> Swift.Int32
   public static func setFTConfig(config: SIPFramework.SIPFTConfig, callbacks: SIPFramework.SIPFTCallbacks) -> Swift.Int32
   public static func sendFile(accUuid: Swift.UInt64, username: Swift.String?, remoteIp: Swift.String?, filePath: Swift.String, extra: Swift.String?) -> (code: Swift.Int32, ftId: Swift.UInt64)
   public static func requestFile(accUuid: Swift.UInt64, username: Swift.String?, remoteIp: Swift.String?, fileName: Swift.String, extra: Swift.String?) -> (code: Swift.Int32, reqId: Swift.UInt64)

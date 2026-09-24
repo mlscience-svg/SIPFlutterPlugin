@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SIPManage implements SIPSDKListener.InitCompletedListener,
+        SIPSDKListener.StopCompletedListener,
         SIPSDKListener.RegistryStateListener,
         SIPSDKListener.DtmfInfoListener,
         SIPSDKListener.MessageListener,
@@ -122,6 +123,21 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         map.put("message", msg);
         handler.post(() -> {
             SipSdkFlutterPlugin.channel.invokeMethod("onInitCompleted", map);
+        });
+    }
+
+    /**
+     * SDK 销毁完成（对应 Dart 侧 SIPSDKCallbacks.onStopCompleted）。
+     *
+     * must 转发：`SIPSDK.destroy()` 是异步的 —— 调用返回时 PJSUA 还在拆（实测约 1.7s），
+     * 这期间若立刻 initToken，新的初始化会被这次拆解吞掉：既没有 onInitCompleted，
+     * 之后所有 API 还会打在已销毁的任务队列上（"api job error: queue is NULL"）。
+     * Dart 侧靠这个回调把 destroy→init 串起来。
+     */
+    @Override
+    public void onStopCompleted() {
+        handler.post(() -> {
+            SipSdkFlutterPlugin.channel.invokeMethod("onStopCompleted", null);
         });
     }
 

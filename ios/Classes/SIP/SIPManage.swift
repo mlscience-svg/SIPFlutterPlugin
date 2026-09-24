@@ -32,14 +32,11 @@ public class SIPManage {
         }
     }
 
+    // 说明：以下回调的数据都会经 method channel 上报 Dart，Dart 侧已有日志，
+    // 这里不再重复 print，避免真机 Console 被刷屏；只保留 onLogCallback 的打印
+    // —— SDK 内部日志是唯一没有 Dart 等价物的诊断来源。
     static let onInitCompleted: OnInitCompleted = { state, msg in
-        var message: String?
-        if let msg = msg {
-            message = String(cString: msg)
-            print("SDK Init completed. State: \(state), Message: \(message ?? "nil")")
-        } else {
-            print("SDK Init completed. State: \(state), No message.")
-        }
+        let message = msg.map { String(cString: $0) }
         let payload: [String: Any] = [
             "state": state,
             "message": message ?? "",
@@ -50,14 +47,12 @@ public class SIPManage {
     }
 
     static let onStopCompleted: OnStopCompleted = {
-        print("SDK stopped.")
         DispatchQueue.main.async {
             SipSdkFlutterPlugin.channel?.invokeMethod("onStopCompleted", arguments: nil)
         }
     }
 
     static let onRegistrarState: OnRegistrarState = { state in
-        print("Registrar state: \(state)")
         // 注册状态改变
         let payload: [String: Any] = [
             "state": state,
@@ -68,7 +63,6 @@ public class SIPManage {
     }
 
     static let onIncomingCall: OnIncomingCall = { callParam in
-        print("Incoming call with params: \(callParam)")
         var headers = [String: String]()
         // 使用 withUnsafePointer 获取 headers 指针
         withUnsafePointer(to: callParam.headers) { headersPtr in
@@ -118,8 +112,6 @@ public class SIPManage {
     }
 
     static let onDtmfInfo: OnDtmfInfo = { dtmfInfoParam in
-        print("DTMF info: \(dtmfInfoParam)")
-        // 注册状态改变
         var contentType: String?
         if let content_type = dtmfInfoParam.content_type {
             contentType = String(cString: content_type)
@@ -140,7 +132,6 @@ public class SIPManage {
     }
 
     static let onMessage: OnMessage = { messageParam in
-        print("Received message: \(messageParam)")
         var username: String?
         if let u = messageParam.username {
             username = String(cString: u)
@@ -165,7 +156,6 @@ public class SIPManage {
     }
 
     static let onMessageState: OnMessageState = { state, messageParam in
-        print("Message state: \(state), \(messageParam)")
         var username: String?
         if let u = messageParam.username {
             username = String(cString: u)
@@ -193,7 +183,6 @@ public class SIPManage {
     }
 
     static let onCallState: OnCallState = { param in
-        print("Call state changed. callUuid: \(param.call_uuid), State: \(param.state)")
         var lastStatusText: String?
         if let text = param.last_status_text {
             lastStatusText = String(cString: text)

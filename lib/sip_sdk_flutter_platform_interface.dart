@@ -11,6 +11,7 @@ import 'entitys/sip_sdk_ft_param.dart';
 import 'entitys/sip_sdk_ft_request_param.dart';
 import 'entitys/sip_sdk_ft_result.dart';
 import 'entitys/sip_sdk_registrar_config.dart';
+import 'entitys/sip_sdk_stun_config.dart';
 import 'sip_sdk_flutter_method_channel.dart';
 import 'package:sip_sdk_flutter/sip_sdk_callbacks.dart';
 
@@ -232,6 +233,10 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('setFTConfig() has not been implemented.');
   }
 
+  Future<int> setStunConfig(STUNConfig config) {
+    throw UnimplementedError('setStunConfig() has not been implemented.');
+  }
+
   Future<SIPSDKFTResult> sendFile(SIPSDKFTParam param) {
     throw UnimplementedError('sendFile() has not been implemented.');
   }
@@ -292,6 +297,12 @@ abstract class SipSdkFlutterPlatform extends PlatformInterface {
   /// 释放播放器与纹理（见 [SipSdkFlutter.disposeVideoPlayer]）。
   Future<void> disposeVideoPlayer(int textureId) {
     throw UnimplementedError('disposeVideoPlayer() has not been implemented.');
+  }
+
+  /// 取回最近一次 createVideoPlayer 失败/播放期错误的原因（iOS 调试用；
+  /// 无失败时为空串；Android 返回空串）。
+  Future<String> videoPlayerLastError() {
+    throw UnimplementedError('videoPlayerLastError() has not been implemented.');
   }
 
   Future<int> rejectFile(int ftId, String reason) {

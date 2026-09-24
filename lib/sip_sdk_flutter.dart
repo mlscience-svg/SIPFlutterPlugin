@@ -11,6 +11,7 @@ import 'entitys/sip_sdk_ft_param.dart';
 import 'entitys/sip_sdk_ft_request_param.dart';
 import 'entitys/sip_sdk_ft_result.dart';
 import 'entitys/sip_sdk_registrar_config.dart';
+import 'entitys/sip_sdk_stun_config.dart';
 import 'sip_sdk_flutter_platform_interface.dart';
 
 class SipSdkFlutter {
@@ -233,6 +234,21 @@ class SipSdkFlutter {
     return SipSdkFlutterPlatform.instance.clearVideo();
   }
 
+  /// 单独设置 STUN（**运行期接口**，不是初始化配置）。
+  ///
+  /// 与 [SIPSDKConfig.stunConfig] 的区别：[SIPSDKConfig.stunConfig] 只在 init 时生效
+  /// 一次，之后服务端地址变了必须重启进程；这个方法随时可调，服务端地址变更后重新调一次
+  /// 即可，不需要重启 SDK。
+  ///
+  /// 两处都给了的话运行期这次为准。要彻底不走 init 那条路，init 时不要给
+  /// [SIPSDKConfig.stunConfig] 就行（老调用方继续给，行为不变）。
+  ///
+  /// 解析是异步的，结果走 [SIPSDKCallbacks.onStunState]；解析成功之前发起的注册/呼叫
+  /// 用不上 STUN，需要的话等回调成功再注册。返回状态码，0 表示成功。
+  Future<int> setStunConfig(STUNConfig config) {
+    return SipSdkFlutterPlatform.instance.setStunConfig(config);
+  }
+
   // ---- 文件传输（FT） ----
 
   /// 配置文件传输（需在 [initSDK] / [initToken] 之前调用；enable 为 true 时 SDK init 完成会自动初始化 FT 模块）。
@@ -322,6 +338,12 @@ class SipSdkFlutter {
 
   Future<void> disposeVideoPlayer(int textureId) {
     return SipSdkFlutterPlatform.instance.disposeVideoPlayer(textureId);
+  }
+
+  /// 取回最近一次 createVideoPlayer 失败/播放期错误的原因（iOS 调试用；
+  /// 无失败时为空串；Android 返回空串）。
+  Future<String> videoPlayerLastError() {
+    return SipSdkFlutterPlatform.instance.videoPlayerLastError();
   }
 
   /// 拒绝对端的文件传输请求。
