@@ -15943,14 +15943,21 @@
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
       "kind": "BooleanLiteral",
-      "offset": 2380,
+      "offset": 1251,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
+      "kind": "BooleanLiteral",
+      "offset": 2727,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMPlayer.swift",
       "kind": "BooleanLiteral",
-      "offset": 2959,
+      "offset": 3306,
       "length": 4,
       "value": "true"
     },
@@ -15991,38 +15998,59 @@
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
+      "kind": "BooleanLiteral",
+      "offset": 726,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "StringLiteral",
-      "offset": 681,
+      "offset": 809,
       "length": 19,
       "value": "\"pcm.recorder.sync\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "Array",
-      "offset": 743,
+      "offset": 871,
       "length": 2,
       "value": "[]"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "BooleanLiteral",
-      "offset": 813,
+      "offset": 941,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "IntegerLiteral",
-      "offset": 1224,
+      "offset": 1352,
       "length": 2,
       "value": "12"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
       "kind": "FloatLiteral",
-      "offset": 1277,
+      "offset": 1405,
       "length": 4,
       "value": "0.25"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
+      "kind": "IntegerLiteral",
+      "offset": 9377,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/PCMRecorder.swift",
+      "kind": "Array",
+      "offset": 9570,
+      "length": 2,
+      "value": "[]"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Utils\/SIPSDKDeviceUUID.swift",

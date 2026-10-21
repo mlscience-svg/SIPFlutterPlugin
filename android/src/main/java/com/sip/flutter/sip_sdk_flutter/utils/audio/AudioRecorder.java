@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.audiofx.AcousticEchoCanceler;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -20,6 +21,14 @@ public class AudioRecorder {
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT);
     private AudioRecord audioRecord = null;
+    private AcousticEchoCanceler aec = null;
+    // 是否已申请通话音频模式。init 可能被重复调用，保证与 destroy 一一配对。
+    private boolean callAudioMode = false;
+
+    /** 系统是否提供 AEC 效果。有系统 AEC 时 SDK 侧的 AECM 必须关闭，避免重复处理。 */
+    public static boolean isPlatformAecAvailable() {
+        return AcousticEchoCanceler.isAvailable();
+    }
 
     private static class Instance {
         private static final AudioRecorder instance = new AudioRecorder();
@@ -50,14 +59,47 @@ public class AudioRecorder {
         if (ActivityCompat.checkSelfPermission(SipSdkFlutterPlugin.context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        destroy();
+        release();
+        // 通话期间切到通话音频模式，VOICE_COMMUNICATION 音源才会走语音处理链
+        if (!callAudioMode) {
+            AudioHandle.instance().setCallAudioMode(true);
+            callAudioMode = true;
+        }
         // 单声道
         int channelConfig = AudioFormat.CHANNEL_IN_MONO;
         // 位深度
         int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat, bufferSize);
+        // VOICE_COMMUNICATION 让系统 AEC/NS/AGC（含厂商硬件实现）参与采集；
+        // 这些处理会跟随设备自身延迟自适应，不依赖 SDK 里写死的声卡延时。
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION, sampleRate, channelConfig, audioFormat, bufferSize);
         Log.i(TAG, "AudioRecord init: sampleRate=" + sampleRate + ", frameSize=" + frameSize + ", bufferSize=" + bufferSize);
+        if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+            Log.e(TAG, "AudioRecord initialization failed, state=" + audioRecord.getState());
+            // 走统一的销毁路径，把刚申请的通话音频模式还回去。
+            destroy();
+            return;
+        }
         audioRecord.startRecording();
+        attachPlatformAec();
+    }
+
+    private void attachPlatformAec() {
+        if (!AcousticEchoCanceler.isAvailable()) {
+            Log.w(TAG, "platform AEC not available, SDK AEC will be used");
+            return;
+        }
+        try {
+            aec = AcousticEchoCanceler.create(audioRecord.getAudioSessionId());
+            if (aec != null) {
+                aec.setEnabled(true);
+                Log.i(TAG, "platform AEC attached, session=" + audioRecord.getAudioSessionId());
+            } else {
+                Log.w(TAG, "platform AEC create returned null");
+            }
+        } catch (Exception e) {
+            aec = null;
+            Log.e(TAG, "platform AEC attach failed", e);
+        }
     }
 
     public byte[] recording() {
@@ -78,6 +120,23 @@ public class AudioRecorder {
     }
 
     public void destroy() {
+        release();
+        // 通话结束恢复普通音频模式，避免影响振铃、提示音等系统声音
+        if (callAudioMode) {
+            AudioHandle.instance().setCallAudioMode(false);
+            callAudioMode = false;
+        }
+    }
+
+    private void release() {
+        if (aec != null) {
+            try {
+                aec.setEnabled(false);
+            } catch (Exception ignored) {
+            }
+            aec.release();
+            aec = null;
+        }
         if (audioRecord != null) {
             try {
                 audioRecord.stop();

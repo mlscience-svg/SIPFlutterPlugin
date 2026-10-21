@@ -4,10 +4,34 @@ import Flutter
 import SIPFramework
 import UIKit
 
+/// 视频容器：AVSampleBufferDisplayLayer 是手动 addSublayer 加进来的，不会跟随
+/// UIView 的 autoresizingMask 变化；全屏/旋屏后平台视图尺寸变了，画面却还停在
+/// 旧尺寸的左上角，看起来就是黑的。在 layoutSubviews 里同步子图层 frame。
+private final class VideoContainerView: UIView {
+    weak var displayLayer: AVSampleBufferDisplayLayer?
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let displayLayer = displayLayer,
+              displayLayer.superlayer === layer else { return }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        displayLayer.frame = bounds
+        CATransaction.commit()
+    }
+}
+
 class VideoComponentView: NSObject, FlutterPlatformView {
     static weak var currentInstance: VideoComponentView?
+
+    /// 当前通话的视频图层。由 SIPFramework 创建，只在 VIDEO_LAYER_READY 通知里
+    /// 交付一次；而 Flutter 侧布局变化（例如全屏切换）可能销毁重建平台视图，
+    /// 新实例收不到第二次通知。这里强引用住最新图层，新实例直接接回去，
+    /// 否则重建后永远是黑屏。
+    private static var currentVideoLayer: AVSampleBufferDisplayLayer?
+
     private var _view: UIView
-    var videoContainerView: UIView!
+    private var videoContainerView: VideoContainerView!
     private var videoLayer: AVSampleBufferDisplayLayer?
     // 图像比例：true=1:1 按实际比例(留黑边)，false=铺满(拉伸变形)。默认 1:1。
     private var isOriginalRatio = true
@@ -70,15 +94,35 @@ class VideoComponentView: NSObject, FlutterPlatformView {
     }
 
     private func setupVideoView(view: UIView) {
-        videoContainerView = UIView(frame: view.bounds)
+        videoContainerView = VideoContainerView(frame: view.bounds)
         videoContainerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(videoContainerView)
+        attachCurrentLayerIfNeeded()
     }
 
     func createNativeView(view _view: UIView) {
-        videoContainerView = UIView(frame: _view.bounds)
+        videoContainerView = VideoContainerView(frame: _view.bounds)
         videoContainerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         _view.addSubview(videoContainerView)
+        attachCurrentLayerIfNeeded()
+    }
+
+    /// 平台视图重建时把已经存在的视频图层接回来。
+    private func attachCurrentLayerIfNeeded() {
+        guard let layer = VideoComponentView.currentVideoLayer else { return }
+        attach(layer)
+    }
+
+    /// 把视频图层挂到当前容器上。图层可能还挂在旧的（已销毁的）容器上，
+    /// 先摘下来再挂，避免同一图层出现在两处。
+    private func attach(_ layer: AVSampleBufferDisplayLayer) {
+        videoLayer = layer
+        videoContainerView.displayLayer = layer
+        layer.removeFromSuperlayer()
+        layer.frame = videoContainerView.bounds
+        videoContainerView.layer.addSublayer(layer)
+        videoContainerView.setNeedsLayout()
+        applyVideoGravity()
     }
 
     @objc private func cameraStateChangeReady(_ notification: Notification) {
@@ -94,11 +138,10 @@ class VideoComponentView: NSObject, FlutterPlatformView {
     @objc private func handleVideoLayerReady(_ notification: Notification) {
         guard let userInfo = notification.userInfo, let layer = userInfo["layer"] as? AVSampleBufferDisplayLayer else { return }
 
-        videoLayer = layer
-        DispatchQueue.main.async {
-            layer.frame = self.videoContainerView.bounds
-            self.videoContainerView.layer.addSublayer(layer)
-            self.applyVideoGravity()
+        VideoComponentView.currentVideoLayer = layer
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.attach(layer)
         }
     }
 

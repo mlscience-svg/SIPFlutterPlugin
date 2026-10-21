@@ -348,6 +348,12 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             mediaConfig.agcEnable = MapUtils.get(mediaDict, "agcEnable", true);
             mediaConfig.aecEnable = MapUtils.get(mediaDict, "aecEnable", true);
             mediaConfig.aecEliminationTime = MapUtils.get(mediaDict, "aecEliminationTime", (short) 30);
+            // 系统有 AEC 时关闭 SDK 自带的 AECM：AECM 把 30ms 当作声卡延时写死，
+            // 与实际播放/采集链路对不上，远端声音大时会压制本端话筒。系统 AEC
+            // 跟随设备自身延迟，兼容不同手机；没有系统 AEC 的机型仍保留 SDK AECM。
+            if (AudioRecorder.isPlatformAecAvailable()) {
+                mediaConfig.aecEnable = false;
+            }
 
             Map<String, Object> decodeConfig = MapUtils.get(mediaDict, "decodeConfig", new HashMap<>());
             mediaConfig.decodeMaxWidth = MapUtils.get(decodeConfig, "maxWidth", 1920);
@@ -427,6 +433,12 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             mediaConfig.agcEnable = MapUtils.get(mediaDict, "agcEnable", true);
             mediaConfig.aecEnable = MapUtils.get(mediaDict, "aecEnable", true);
             mediaConfig.aecEliminationTime = MapUtils.get(mediaDict, "aecEliminationTime", (short) 30);
+            // 系统有 AEC 时关闭 SDK 自带的 AECM：AECM 把 30ms 当作声卡延时写死，
+            // 与实际播放/采集链路对不上，远端声音大时会压制本端话筒。系统 AEC
+            // 跟随设备自身延迟，兼容不同手机；没有系统 AEC 的机型仍保留 SDK AECM。
+            if (AudioRecorder.isPlatformAecAvailable()) {
+                mediaConfig.aecEnable = false;
+            }
 
             Map<String, Object> decodeConfig = MapUtils.get(mediaDict, "decodeConfig", new HashMap<>());
             mediaConfig.decodeMaxWidth = MapUtils.get(decodeConfig, "maxWidth", 1920);
