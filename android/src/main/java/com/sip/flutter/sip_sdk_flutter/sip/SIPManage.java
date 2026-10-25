@@ -25,6 +25,8 @@ import com.sip.sdk.i.SIPSDKListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.flutter.plugin.common.MethodChannel;
+
 public class SIPManage implements SIPSDKListener.InitCompletedListener,
         SIPSDKListener.StopCompletedListener,
         SIPSDKListener.RegistryStateListener,
@@ -54,6 +56,19 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
 
     public static SIPManage instance() {
         return Instance.instance;
+    }
+
+    /**
+     * 把 SDK 回调转发给 Flutter。
+     * Engine 销毁（onDetachedFromEngine，如按返回键退出 Activity）后 channel 为 null，
+     * 而 SDK 仍在后台线程回调，此时直接丢弃，否则 invokeMethod 空指针崩溃。
+     */
+    private static void send(String method, Object payload) {
+        MethodChannel channel = SipSdkFlutterPlugin.channel;
+        if (channel == null) {
+            return;
+        }
+        channel.invokeMethod(method, payload);
     }
 
     public void init(Context context,
@@ -93,7 +108,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         Map<String, Object> map = new HashMap<>();
         map.put("state", runing);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onCameraStateChange", map);
+            send("onCameraStateChange", map);
         });
     }
 
@@ -103,7 +118,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("expireTime", expireTime);
         payload.put("currentTime", currentTime);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onExpireWarning", payload);
+            send("onExpireWarning", payload);
         });
     }
 
@@ -112,7 +127,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         Map<String, Object> payload = new HashMap<>();
         payload.put("state", code);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onRegistrarState", payload);
+            send("onRegistrarState", payload);
         });
     }
 
@@ -122,7 +137,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         map.put("state", state);
         map.put("message", msg);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onInitCompleted", map);
+            send("onInitCompleted", map);
         });
     }
 
@@ -137,7 +152,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
     @Override
     public void onStopCompleted() {
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onStopCompleted", null);
+            send("onStopCompleted", null);
         });
     }
 
@@ -152,7 +167,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("transmitVideo", param.transmitVideo);
         payload.put("transmitSound", param.transmitSound);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onIncomingCall", payload);
+            send("onIncomingCall", payload);
         });
     }
 
@@ -169,7 +184,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("requestDomain", param.requestDomain);
         payload.put("requestUsername", param.requestUsername);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onFindIncoming", payload);
+            send("onFindIncoming", payload);
         });
         return param.currentType;
     }
@@ -182,7 +197,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("lastStatus", param.lastStatus);
         payload.put("lastStatusText", param.lastStatusText);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onCallState", payload);
+            send("onCallState", payload);
         });
     }
 
@@ -194,7 +209,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("contentType", param.contentType);
         payload.put("content", param.content);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onDtmfInfo", payload);
+            send("onDtmfInfo", payload);
         });
     }
 
@@ -206,7 +221,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("remoteIp", param.remoteIp);
         payload.put("content", param.content);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onMessage", payload);
+            send("onMessage", payload);
         });
     }
 
@@ -221,7 +236,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         message.put("content", param.content);
         payload.put("message", message);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onMessageState", payload);
+            send("onMessageState", payload);
         });
     }
 
@@ -229,7 +244,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
     public void onActivityCheck() {
         Map<String, Object> payload = new HashMap<>();
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onActivityCheck", payload);
+            send("onActivityCheck", payload);
         });
     }
 
@@ -258,7 +273,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("remoteIp", param.remoteIp);
         payload.put("file", ftFileMetaMap(param.file));
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onFTOffer", payload);
+            send("onFTOffer", payload);
         });
     }
 
@@ -271,7 +286,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("remoteIp", info.remoteIp);
         payload.put("file", ftFileMetaMap(info.file));
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onFTRequest", payload);
+            send("onFTRequest", payload);
         });
     }
 
@@ -282,7 +297,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("ok", ok);
         payload.put("reason", reason);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onFTRequestResult", payload);
+            send("onFTRequestResult", payload);
         });
     }
 
@@ -307,7 +322,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("percent", progress.percent);
         payload.put("activeSessions", progress.activeSessions);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onFTProgress", payload);
+            send("onFTProgress", payload);
         });
     }
 
@@ -322,7 +337,7 @@ public class SIPManage implements SIPSDKListener.InitCompletedListener,
         payload.put("fileName", param.fileName);
         payload.put("savePath", param.savePath);
         handler.post(() -> {
-            SipSdkFlutterPlugin.channel.invokeMethod("onFTComplete", payload);
+            send("onFTComplete", payload);
         });
     }
 }
