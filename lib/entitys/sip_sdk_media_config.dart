@@ -10,7 +10,13 @@ class SIPSDKMediaConfig {
   final double? speakerGain;
   final bool? nsEnable;
   final bool? agcEnable;
+  final int? agcMaxGain;
+  final int? agcIncrement;
+  final int? agcDecrement;
+  final double? agcLevel;
   final bool? aecEnable;
+  final int? aecEchoMode;
+  final int? aecCngMode;
   final int? aecEliminationTime;
   final SIPSDKMediaH264Fmtp? h264Fmtp;
   final SIPSDKVideoDecodeConfig? decodeConfig;
@@ -24,8 +30,14 @@ class SIPSDKMediaConfig {
     this.speakerGain = 1.0,
     this.nsEnable = true,
     this.agcEnable = true,
+    this.agcMaxGain = 10,
+    this.agcIncrement = 3,
+    this.agcDecrement = 40,
+    this.agcLevel = 4000,
     this.aecEnable = true,
-    this.aecEliminationTime = 30,
+    this.aecEchoMode = 3,
+    this.aecCngMode = 0,
+    this.aecEliminationTime = 50,
     SIPSDKMediaH264Fmtp? h264Fmtp,
     SIPSDKVideoDecodeConfig? decodeConfig,
     SIPSDKVideoEncodeConfig? encodeConfig,
@@ -63,7 +75,13 @@ class SIPSDKMediaConfig {
         'speakerGain': speakerGain,
         'nsEnable': nsEnable,
         'agcEnable': agcEnable,
+        'agcMaxGain': agcMaxGain,
+        'agcIncrement': agcIncrement,
+        'agcDecrement': agcDecrement,
+        'agcLevel': agcLevel,
         'aecEnable': aecEnable,
+        'aecEchoMode': aecEchoMode,
+        'aecCngMode': aecCngMode,
         'aecEliminationTime': aecEliminationTime,
         'h264Fmtp': h264Fmtp?.toJson(),
         'decodeConfig': decodeConfig?.toJson(),
@@ -79,7 +97,13 @@ class SIPSDKMediaConfig {
       speakerGain: json['speakerGain'] as double?,
       nsEnable: json['nsEnable'] as bool?,
       agcEnable: json['agcEnable'] as bool?,
+      agcMaxGain: json['agcMaxGain'] as int?,
+      agcIncrement: json['agcIncrement'] as int?,
+      agcDecrement: json['agcDecrement'] as int?,
+      agcLevel: (json['agcLevel'] as num?)?.toDouble(),
       aecEnable: json['aecEnable'] as bool?,
+      aecEchoMode: json['aecEchoMode'] as int?,
+      aecCngMode: json['aecCngMode'] as int?,
       aecEliminationTime: json['aecEliminationTime'] as int?,
       h264Fmtp: json['h264Fmtp'] != null
           ? SIPSDKMediaH264Fmtp.fromJson(json['h264Fmtp'])

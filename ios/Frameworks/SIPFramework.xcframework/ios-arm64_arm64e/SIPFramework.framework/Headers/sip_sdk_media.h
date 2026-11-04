@@ -114,7 +114,13 @@ extern "C"
         sdk_bool_t ns_enable;                                       // 是否启用噪声抑制（默认 SDK_TRUE）
         int ns_strength;                                            // 噪声抑制强度(默认 -20，-1～-40)
         sdk_bool_t agc_enable;                                      // 是否启用自动增益（默认 SDK_TRUE）
+        int agc_max_gain;                                           // AGC 最大增益(dB, 默认 10)；默认内置值为 30dB，过大
+        int agc_increment;                                          // AGC 增益上升速度(dB/s, 默认 3)；内置默认 12
+        int agc_decrement;                                          // AGC 增益回落速度(dB/s, 默认 40)
+        float agc_level;                                            // AGC 目标电平(默认 4000，范围 1~32768)；内置默认 8000
         sdk_bool_t aec_enable;                                      // 是否启用回音消除（默认 SDK_TRUE）
+        int aec_echo_mode;                                          // 回声抑制强度：0 最弱、1 较弱、2 历史默认、3 WebRTC 默认、4 最强
+        int aec_cng_mode;                                           // 舒适噪声：0 关闭、1 开启（默认）
         short int aec_elimination_time;                             // 回音消除时间 （默认 30 ms）
         sip_video_op video_op;                                      // 视频操作
         sip_audio_op audio_op;                                      // 音频操作

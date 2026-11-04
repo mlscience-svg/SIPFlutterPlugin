@@ -14070,7 +14070,7 @@
           {
             "kind": "Constructor",
             "name": "init",
-            "printedName": "init(audioOnlyCallConfirmed:audioClockRate:micGain:speakerGain:nsEnable:agcEnable:aecEnable:aecEliminationTime:notEnableEncode:notEnableDecode:decodeMaxWidth:decodeMaxHeight:combinSpsPpsIdr:profileLevelId:packetizationMode:)",
+            "printedName": "init(audioOnlyCallConfirmed:audioClockRate:micGain:speakerGain:nsEnable:agcEnable:agcMaxGain:agcIncrement:agcDecrement:agcLevel:aecEnable:aecEchoMode:aecCngMode:aecEliminationTime:notEnableEncode:notEnableDecode:decodeMaxWidth:decodeMaxHeight:combinSpsPpsIdr:profileLevelId:packetizationMode:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -14122,10 +14122,52 @@
               },
               {
                 "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "hasDefaultArg": true,
+                "usr": "s:s5Int32V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "hasDefaultArg": true,
+                "usr": "s:s5Int32V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "hasDefaultArg": true,
+                "usr": "s:s5Int32V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Float",
+                "printedName": "Swift.Float",
+                "hasDefaultArg": true,
+                "usr": "s:Sf"
+              },
+              {
+                "kind": "TypeNominal",
                 "name": "Bool",
                 "printedName": "Swift.Bool",
                 "hasDefaultArg": true,
                 "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "hasDefaultArg": true,
+                "usr": "s:s5Int32V"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Int32",
+                "printedName": "Swift.Int32",
+                "hasDefaultArg": true,
+                "usr": "s:s5Int32V"
               },
               {
                 "kind": "TypeNominal",
@@ -14201,8 +14243,8 @@
               }
             ],
             "declKind": "Constructor",
-            "usr": "s:12SIPFramework17SIPSDKMediaConfigV22audioOnlyCallConfirmed0D9ClockRate7micGain07speakerK08nsEnable03agcN003aecN00P15EliminationTime03notN6Encode0sN6Decode14decodeMaxWidth0vW6Height15combinSpsPpsIdr14profileLevelId17packetizationModeACSb_s5Int32VS2fS3bs5Int16VS2bs6UInt32VAXSbSSSgAYtcfc",
-            "mangledName": "$s12SIPFramework17SIPSDKMediaConfigV22audioOnlyCallConfirmed0D9ClockRate7micGain07speakerK08nsEnable03agcN003aecN00P15EliminationTime03notN6Encode0sN6Decode14decodeMaxWidth0vW6Height15combinSpsPpsIdr14profileLevelId17packetizationModeACSb_s5Int32VS2fS3bs5Int16VS2bs6UInt32VAXSbSSSgAYtcfc",
+            "usr": "s:12SIPFramework17SIPSDKMediaConfigV22audioOnlyCallConfirmed0D9ClockRate7micGain07speakerK08nsEnable03agcN00o3MaxK00O9Increment0O9Decrement0O5Level03aecN00T8EchoMode0t3CngV00T15EliminationTime03notN6Encode0zN6Decode06decodeP5Width06decodeP6Height15combinSpsPpsIdr07profileS2Id013packetizationV0ACSb_s5Int32VS2fS2bA3ZSfSbA2Zs5Int16VS2bs6UInt32VA2_SbSSSgA3_tcfc",
+            "mangledName": "$s12SIPFramework17SIPSDKMediaConfigV22audioOnlyCallConfirmed0D9ClockRate7micGain07speakerK08nsEnable03agcN00o3MaxK00O9Increment0O9Decrement0O5Level03aecN00T8EchoMode0t3CngV00T15EliminationTime03notN6Encode0zN6Decode06decodeP5Width06decodeP6Height15combinSpsPpsIdr07profileS2Id013packetizationV0ACSb_s5Int32VS2fS2bA3ZSfSbA2Zs5Int16VS2bs6UInt32VA2_SbSSSgA3_tcfc",
             "moduleName": "SIPFramework",
             "declAttributes": [
               "AccessControl"
@@ -15747,175 +15789,217 @@
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 2699,
+      "offset": 2858,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 2738,
+      "offset": 2897,
       "length": 5,
       "value": "16000"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "FloatLiteral",
-      "offset": 2770,
+      "offset": 2929,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "FloatLiteral",
-      "offset": 2804,
+      "offset": 2963,
       "length": 3,
       "value": "1.0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 2834,
+      "offset": 2993,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 2866,
-      "length": 4,
-      "value": "true"
-    },
-    {
-      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
-      "kind": "BooleanLiteral",
-      "offset": 2898,
+      "offset": 3025,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 2940,
+      "offset": 3059,
+      "length": 2,
+      "value": "10"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3093,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3126,
+      "length": 2,
+      "value": "40"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3156,
+      "length": 4,
+      "value": "4000"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "BooleanLiteral",
+      "offset": 3188,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3223,
+      "length": 1,
+      "value": "3"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3254,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
+      "kind": "IntegerLiteral",
+      "offset": 3293,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 2976,
+      "offset": 3329,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 3015,
+      "offset": 3368,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 3055,
+      "offset": 3408,
       "length": 4,
       "value": "1920"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 3095,
+      "offset": 3448,
       "length": 4,
       "value": "1080"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "BooleanLiteral",
-      "offset": 3133,
+      "offset": 3486,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 4403,
+      "offset": 4984,
       "length": 43,
       "value": "\"Codec initialized with UUID: \""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 4445,
+      "offset": 5026,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 4562,
+      "offset": 5143,
       "length": 29,
       "value": "\"Error: configPointer is nil\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 4946,
+      "offset": 5527,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 5758,
+      "offset": 6339,
       "length": 71,
       "value": "\"Deinitializing codec with user data: \""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 5828,
+      "offset": 6409,
       "length": 1,
       "value": "\"\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 6020,
+      "offset": 6601,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 7901,
+      "offset": 8482,
       "length": 41,
       "value": "\"Audio media stream write thread created\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "IntegerLiteral",
-      "offset": 8102,
+      "offset": 8683,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 8576,
+      "offset": 9157,
       "length": 43,
       "value": "\"Audio media stream write thread destroyed\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 8790,
+      "offset": 9371,
       "length": 40,
       "value": "\"Audio media stream read thread created\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/SIP\/SIPMediaHandle.swift",
       "kind": "StringLiteral",
-      "offset": 10362,
+      "offset": 10943,
       "length": 42,
       "value": "\"Audio media stream read thread destroyed\""
     },

@@ -346,7 +346,13 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             mediaConfig.speakerGain = MapUtils.get(mediaDict, "speakerGain", 1.0f);
             mediaConfig.nsEnable = MapUtils.get(mediaDict, "nsEnable", true);
             mediaConfig.agcEnable = MapUtils.get(mediaDict, "agcEnable", true);
+            mediaConfig.agcMaxGain = MapUtils.get(mediaDict, "agcMaxGain", 10);
+            mediaConfig.agcIncrement = MapUtils.get(mediaDict, "agcIncrement", 3);
+            mediaConfig.agcDecrement = MapUtils.get(mediaDict, "agcDecrement", 40);
+            mediaConfig.agcLevel = MapUtils.get(mediaDict, "agcLevel", 4000f);
             mediaConfig.aecEnable = MapUtils.get(mediaDict, "aecEnable", true);
+            mediaConfig.aecEchoMode = MapUtils.get(mediaDict, "aecEchoMode", 3);
+            mediaConfig.aecCngMode = MapUtils.get(mediaDict, "aecCngMode", 1);
             mediaConfig.aecEliminationTime = MapUtils.get(mediaDict, "aecEliminationTime", (short) 30);
             // 系统有 AEC 时关闭 SDK 自带的 AECM：AECM 把 30ms 当作声卡延时写死，
             // 与实际播放/采集链路对不上，远端声音大时会压制本端话筒。系统 AEC
@@ -431,7 +437,13 @@ public class SipSdkFlutterPlugin implements FlutterPlugin, MethodCallHandler, Ac
             mediaConfig.speakerGain = MapUtils.get(mediaDict, "speakerGain", 1.0f);
             mediaConfig.nsEnable = MapUtils.get(mediaDict, "nsEnable", true);
             mediaConfig.agcEnable = MapUtils.get(mediaDict, "agcEnable", true);
+            mediaConfig.agcMaxGain = MapUtils.get(mediaDict, "agcMaxGain", 10);
+            mediaConfig.agcIncrement = MapUtils.get(mediaDict, "agcIncrement", 3);
+            mediaConfig.agcDecrement = MapUtils.get(mediaDict, "agcDecrement", 40);
+            mediaConfig.agcLevel = MapUtils.get(mediaDict, "agcLevel", 4000f);
             mediaConfig.aecEnable = MapUtils.get(mediaDict, "aecEnable", true);
+            mediaConfig.aecEchoMode = MapUtils.get(mediaDict, "aecEchoMode", 3);
+            mediaConfig.aecCngMode = MapUtils.get(mediaDict, "aecCngMode", 1);
             mediaConfig.aecEliminationTime = MapUtils.get(mediaDict, "aecEliminationTime", (short) 30);
             // 系统有 AEC 时关闭 SDK 自带的 AECM：AECM 把 30ms 当作声卡延时写死，
             // 与实际播放/采集链路对不上，远端声音大时会压制本端话筒。系统 AEC

@@ -286,7 +286,7 @@ public struct VideoMediaConfig {
 public struct SIPSDKMediaH264Fmtp {
 }
 public struct SIPSDKMediaConfig {
-  public init(audioOnlyCallConfirmed: Swift.Bool = false, audioClockRate: Swift.Int32 = 16000, micGain: Swift.Float = 1.0, speakerGain: Swift.Float = 1.0, nsEnable: Swift.Bool = true, agcEnable: Swift.Bool = true, aecEnable: Swift.Bool = true, aecEliminationTime: Swift.Int16 = 30, notEnableEncode: Swift.Bool = false, notEnableDecode: Swift.Bool = false, decodeMaxWidth: Swift.UInt32 = 1920, decodeMaxHeight: Swift.UInt32 = 1080, combinSpsPpsIdr: Swift.Bool = false, profileLevelId: Swift.String? = nil, packetizationMode: Swift.String? = nil)
+  public init(audioOnlyCallConfirmed: Swift.Bool = false, audioClockRate: Swift.Int32 = 16000, micGain: Swift.Float = 1.0, speakerGain: Swift.Float = 1.0, nsEnable: Swift.Bool = true, agcEnable: Swift.Bool = true, agcMaxGain: Swift.Int32 = 10, agcIncrement: Swift.Int32 = 3, agcDecrement: Swift.Int32 = 40, agcLevel: Swift.Float = 4000, aecEnable: Swift.Bool = true, aecEchoMode: Swift.Int32 = 3, aecCngMode: Swift.Int32 = 1, aecEliminationTime: Swift.Int16 = 30, notEnableEncode: Swift.Bool = false, notEnableDecode: Swift.Bool = false, decodeMaxWidth: Swift.UInt32 = 1920, decodeMaxHeight: Swift.UInt32 = 1080, combinSpsPpsIdr: Swift.Bool = false, profileLevelId: Swift.String? = nil, packetizationMode: Swift.String? = nil)
 }
 @_hasMissingDesignatedInitializers public class PCMPlayer {
   public static let instance: SIPFramework.PCMPlayer

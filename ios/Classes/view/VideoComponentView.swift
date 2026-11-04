@@ -21,6 +21,31 @@ private final class VideoContainerView: UIView {
     }
 }
 
+/// 平台视图宿主：Flutter 只决定宿主尺寸，视频容器由这里在每次布局时铺满宿主，
+/// 显示图层的 frame 再由容器同步到自己的 bounds。
+/// 这样容器尺寸不依赖创建时（尺寸为 0）的 autoresizing 逐层传递。
+private final class VideoHostView: UIView {
+    weak var videoContainer: VideoContainerView?
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        syncContainerFrame()
+    }
+
+    /// 上屏（含从后台起页后回到前台）时立刻补一次布局，容器不沿用旧尺寸。
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        setNeedsLayout()
+        layoutIfNeeded()
+    }
+
+    func syncContainerFrame() {
+        let target = CGRect(origin: .zero, size: bounds.size)
+        guard let container = videoContainer, container.frame != target else { return }
+        container.frame = target
+    }
+}
+
 class VideoComponentView: NSObject, FlutterPlatformView {
     static weak var currentInstance: VideoComponentView?
 
@@ -30,7 +55,7 @@ class VideoComponentView: NSObject, FlutterPlatformView {
     /// 否则重建后永远是黑屏。
     private static var currentVideoLayer: AVSampleBufferDisplayLayer?
 
-    private var _view: UIView
+    private var _view: VideoHostView
     private var videoContainerView: VideoContainerView!
     private var videoLayer: AVSampleBufferDisplayLayer?
     // 图像比例：true=1:1 按实际比例(留黑边)，false=铺满(拉伸变形)。默认 1:1。
@@ -45,7 +70,7 @@ class VideoComponentView: NSObject, FlutterPlatformView {
         arguments args: Any?,
         binaryMessenger _: FlutterBinaryMessenger?
     ) {
-        _view = UIView()
+        _view = VideoHostView()
         super.init()
         VideoComponentView.currentInstance = self
         _view.backgroundColor = UIColor.black
@@ -93,17 +118,13 @@ class VideoComponentView: NSObject, FlutterPlatformView {
         return UIImage(cgImage: cgImage)
     }
 
-    private func setupVideoView(view: UIView) {
-        videoContainerView = VideoContainerView(frame: view.bounds)
-        videoContainerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(videoContainerView)
-        attachCurrentLayerIfNeeded()
-    }
-
-    func createNativeView(view _view: UIView) {
-        videoContainerView = VideoContainerView(frame: _view.bounds)
-        videoContainerView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        _view.addSubview(videoContainerView)
+    private func createNativeView(view: VideoHostView) {
+        let container = VideoContainerView(frame: view.bounds)
+        container.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        container.clipsToBounds = true
+        view.addSubview(container)
+        view.videoContainer = container
+        videoContainerView = container
         attachCurrentLayerIfNeeded()
     }
 
@@ -121,6 +142,7 @@ class VideoComponentView: NSObject, FlutterPlatformView {
         layer.removeFromSuperlayer()
         layer.frame = videoContainerView.bounds
         videoContainerView.layer.addSublayer(layer)
+        _view.setNeedsLayout()
         videoContainerView.setNeedsLayout()
         applyVideoGravity()
     }
