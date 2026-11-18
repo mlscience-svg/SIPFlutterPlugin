@@ -15033,49 +15033,49 @@
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 552,
+      "offset": 600,
       "length": 3,
       "value": "640"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 594,
+      "offset": 642,
       "length": 3,
       "value": "480"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 635,
+      "offset": 683,
       "length": 3,
       "value": "640"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 677,
+      "offset": 725,
       "length": 3,
       "value": "480"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "Dictionary",
-      "offset": 744,
+      "offset": 792,
       "length": 3,
       "value": "[]"
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "StringLiteral",
-      "offset": 801,
+      "offset": 849,
       "length": 23,
       "value": "\"camera.consumer.queue\""
     },
     {
       "filePath": "\/Volumes\/project\/ios\/SIPSDKExample\/SIPFramework\/Codes\/CameraCaptureManager.swift",
       "kind": "StringLiteral",
-      "offset": 876,
+      "offset": 924,
       "length": 20,
       "value": "\"camera.state.queue\""
     },
